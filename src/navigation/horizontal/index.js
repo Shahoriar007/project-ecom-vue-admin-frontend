@@ -1,12 +1,18 @@
 export default [
   {
-    title: 'Home',
-    to: { name: 'index' },
-    icon: { icon: 'tabler-smart-home' },
-  },
-  {
-    title: 'Second page',
-    to: { name: 'second-page' },
-    icon: { icon: 'tabler-file' },
+    header: 'Pages',
+    icon: 'FileIcon',
+    children: [
+      {
+        title: 'Home',
+        route: 'home',
+        icon: 'HomeIcon',
+      },
+      {
+        title: 'Second Page',
+        route: 'second-page',
+        icon: 'FileIcon',
+      },
+    ],
   },
 ]
