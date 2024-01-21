@@ -45,7 +45,7 @@
         :sort-options="{
           enabled: true,
           multipleColumns: true,
-          initialSortBy: [{ field: 'priority', type: 'asc' }],
+          initialSortBy: [{ field: 'name', type: 'asc' }],
         }"
         :columns="columns"
         :pagination-options="{
@@ -54,14 +54,7 @@
         }"
       >
         <template slot="table-row" slot-scope="props">
-          <!-- Column: head -->
-          <!-- <span v-if="props.column.field === 'head'">
-            <template v-if="props.row.head_id != null">
-              <b-avatar :src="props.row.head.data.avatar" class="mx-1" />
-              <span class="text-nowrap">{{ props.row.head.data.name }}</span>
-            </template>
-          </span> -->
-
+         
           <!-- Column: Action -->
           <span v-if="props.column.field === 'action'">
             <span>
@@ -88,7 +81,7 @@
                 >
                   <b-dropdown-item v-on:click="onShowPage(props.row.id)">
                     <feather-icon icon="EyeIcon" class="mr-50" />
-                    <span>Show</span>
+                    <span>Show Permission</span>
                   </b-dropdown-item>
                 </template>
 
@@ -181,38 +174,20 @@
       <validation-observer ref="rolesValidation">
         <b-form v-on:submit.prevent="validationForm">
           <!-- name -->
-          <b-form-group label="Name" label-for="name">
+          <b-form-group label="Role Name" label-for="name">
             <validation-provider #default="{ errors }" name="name" vid="name">
               <b-form-input
                 id="name"
                 type="text"
                 v-model="name"
                 :state="errors.length > 0 ? false : null"
-                placeholder="Role"
+                placeholder="Role Name"
                 rules="required|max:255"
               />
               <small class="text-danger">{{ errors[0] }}</small>
             </validation-provider>
           </b-form-group>
-          <!-- priority -->
-          <b-form-group label="Priority" label-for="priority">
-            <validation-provider
-              #default="{ errors }"
-              name="priority"
-              vid="priority"
-            >
-              <b-form-input
-                id="priority"
-                type="number"
-                v-model="priority"
-                :state="errors.length > 0 ? false : null"
-                placeholder="Priority"
-                rules="required|integer"
-              />
-              <small class="text-danger">{{ errors[0] }}</small>
-            </validation-provider>
-          </b-form-group>
-
+         
           <b-button
             type="submit"
             class="float-right"
@@ -229,27 +204,26 @@
 
 <script>
 import {
-  BCard,
-  BAvatar,
-  BBadge,
-  BPagination,
-  BFormGroup,
-  BFormInput,
-  BFormSelect,
-  BDropdown,
-  BDropdownItem,
-  BButton,
-  BForm,
-  BModal,
+BAvatar,
+BBadge,
+BButton,
+BCard,
+BDropdown,
+BDropdownItem,
+BForm,
+BFormGroup,
+BFormInput,
+BFormSelect,
+BModal,
+BPagination,
 } from "bootstrap-vue";
+import { ValidationObserver, ValidationProvider } from "vee-validate";
 import { VueGoodTable } from "vue-good-table";
 import Ripple from "vue-ripple-directive";
-import { ValidationProvider, ValidationObserver } from "vee-validate";
-import { required, max, integer } from "@validations";
 
+import { permissionsConstant } from "@/helpers/permissionsConstant";
 import ToastificationContent from "@core/components/toastification/ToastificationContent.vue";
 import { mapGetters } from "vuex";
-import { permissionsConstant } from "@/helpers/permissionsConstant";
 
 export default {
   name: "RolesView",
@@ -286,10 +260,7 @@ export default {
           label: "Name",
           field: "name",
         },
-        {
-          label: "Priority",
-          field: "priority",
-        },
+
         {
           label: "Users Count",
           field: "users_count",
@@ -460,7 +431,6 @@ export default {
 
                 {
                   name: this.name,
-                  priority: this.priority,
                 }
               );
 
@@ -483,7 +453,7 @@ export default {
 
                 {
                   name: this.name,
-                  priority: this.priority,
+                  
                 }
               );
 
