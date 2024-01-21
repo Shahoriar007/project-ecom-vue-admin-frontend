@@ -5,7 +5,7 @@
       <b-link class="brand-logo d-flex">
         <b-img :src="require('@/assets/images/logo/logo.png')" alt="logo" />
         <h2 class="brand-text text-primary ml-1 mb-0 align-self-center">
-          Project X
+          Admin Dashboard
         </h2>
       </b-link>
       <!-- /Brand logo-->
@@ -24,7 +24,7 @@
       <b-col lg="4" class="d-flex align-items-center auth-bg px-2 p-lg-5">
         <b-col sm="8" md="6" lg="12" class="px-xl-2 mx-auto">
           <b-card-title title-tag="h2" class="font-weight-bold mb-1">
-            Welcome to Project X
+            Welcome to Admin Dashboard
           </b-card-title>
           <b-card-text class="mb-2">
             Please sign-in to your account
@@ -56,12 +56,12 @@
 
               <!-- forgot password -->
               <b-form-group>
-                <div class="d-flex justify-content-between">
+                <!-- <div class="d-flex justify-content-between">
                   <label for="login-password">Password</label>
                   <b-link to="/">
                     <small>Forgot Password?</small>
                   </b-link>
-                </div>
+                </div> -->
                 <validation-provider
                   #default="{ errors }"
                   name="Password"
@@ -146,27 +146,27 @@
 
 <script>
 /* eslint-disable global-require */
-import { ValidationProvider, ValidationObserver } from "vee-validate";
+import { ValidationObserver, ValidationProvider } from "vee-validate";
 
-import {
-  BRow,
-  BCol,
-  BLink,
-  BFormGroup,
-  BFormInput,
-  BInputGroupAppend,
-  BInputGroup,
-  BFormCheckbox,
-  BCardText,
-  BCardTitle,
-  BImg,
-  BForm,
-  BButton,
-} from "bootstrap-vue";
-import { required, email } from "@validations";
-import { togglePasswordVisibility } from "@core/mixins/ui/forms";
 import store from "@/store/index";
 import ToastificationContent from "@core/components/toastification/ToastificationContent.vue";
+import { togglePasswordVisibility } from "@core/mixins/ui/forms";
+import { email } from "@validations";
+import {
+BButton,
+BCardText,
+BCardTitle,
+BCol,
+BForm,
+BFormCheckbox,
+BFormGroup,
+BFormInput,
+BImg,
+BInputGroup,
+BInputGroupAppend,
+BLink,
+BRow,
+} from "bootstrap-vue";
 
 export default {
   name: "LoginView",

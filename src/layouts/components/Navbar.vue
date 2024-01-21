@@ -17,7 +17,7 @@
     </div>
 
     <b-navbar-nav class="nav align-items-center ml-auto">
-      <attendance-check-in-out />
+     
       <b-nav-item-dropdown
         right
         toggle-class="d-flex align-items-center dropdown-user-link"
@@ -86,18 +86,18 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import {
-  BLink,
-  BNavbarNav,
-  BNavItemDropdown,
-  BDropdownItem,
-  BDropdownDivider,
-  BAvatar,
-} from "bootstrap-vue";
-import DarkToggler from "@core/layouts/components/app-navbar/components/DarkToggler.vue";
-import ToastificationContent from "@core/components/toastification/ToastificationContent.vue";
 import AttendanceCheckInOut from "@/views/admin/attendance/AttendanceCheckInOut.vue";
+import ToastificationContent from "@core/components/toastification/ToastificationContent.vue";
+import DarkToggler from "@core/layouts/components/app-navbar/components/DarkToggler.vue";
+import {
+BAvatar,
+BDropdownDivider,
+BDropdownItem,
+BLink,
+BNavItemDropdown,
+BNavbarNav,
+} from "bootstrap-vue";
+import { mapGetters } from "vuex";
 
 export default {
   components: {

@@ -261,48 +261,8 @@
               </b-form-group>
             </b-col>
 
-            <!-- select designation-->
-            <b-col cols="12">
-              <b-form-group label="Designation" label-for="designation-id">
-                <ValidationProvider
-                  name="designation_id"
-                  v-slot="{ errors }"
-                  vid="designation_id"
-                  :rules="`${modelType == 'editModel' ? '' : 'required'}`"
-                >
-                  <v-select
-                    id="designation-id"
-                    placeholder="Choose a designation"
-                    v-model="selectDesignationId"
-                    :options="designationIdOption"
-                    :reduce="(option) => option.id"
-                    label="name"
-                  />
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </ValidationProvider>
-              </b-form-group>
-            </b-col>
-
-            <!-- select Gender-->
-            <b-col cols="12">
-              <b-form-group label="Gender" label-for="gender">
-                <ValidationProvider
-                  name="gender"
-                  v-slot="{ errors }"
-                  vid="gender"
-                >
-                  <v-select
-                    id="gender"
-                    placeholder="Choose  Employee Types"
-                    v-model="selectGenderId"
-                    :options="genderOption"
-                    :reduce="(option) => option.value"
-                  />
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </ValidationProvider>
-              </b-form-group>
-            </b-col>
-
+         
+        
             <!-- password -->
             <b-col cols="12">
               <b-form-group label="Password" label-for="password">
@@ -392,34 +352,33 @@
 </template>
 
 <script>
+import { email } from "@validations";
 import {
-  BCard,
-  BAvatar,
-  BBadge,
-  BPagination,
-  BFormGroup,
-  BFormInput,
-  BFormSelect,
-  BDropdown,
-  BDropdownItem,
-  BButton,
-  BForm,
-  BModal,
-  VBModal,
-  BRow,
-  BCol,
-  BInputGroupAppend,
-  BInputGroup,
+BAvatar,
+BBadge,
+BButton,
+BCard,
+BCol,
+BDropdown,
+BDropdownItem,
+BForm,
+BFormGroup,
+BFormInput,
+BFormSelect,
+BInputGroup,
+BInputGroupAppend,
+BModal,
+BPagination,
+BRow
 } from "bootstrap-vue";
+import { ValidationObserver, ValidationProvider } from "vee-validate";
 import { VueGoodTable } from "vue-good-table";
 import Ripple from "vue-ripple-directive";
-import { ValidationProvider, ValidationObserver } from "vee-validate";
-import { required, email, max, mimes, size, confirmed } from "@validations";
 
-import ToastificationContent from "@core/components/toastification/ToastificationContent.vue";
-import { mapGetters } from "vuex";
-import { togglePasswordVisibility } from "@core/mixins/ui/forms";
 import { permissionsConstant } from "@/helpers/permissionsConstant";
+import ToastificationContent from "@core/components/toastification/ToastificationContent.vue";
+import { togglePasswordVisibility } from "@core/mixins/ui/forms";
+import { mapGetters } from "vuex";
 
 export default {
   mixins: [togglePasswordVisibility],
@@ -459,11 +418,7 @@ export default {
       email: "",
       selectRoleId: "",
       roleIdOption: [],
-      selectGenderId: "",
-      genderOption: [
-        { label: "Male", value: "Male" },
-        { label: "Female", value: "Female" },
-      ],
+     
       selectStatusValue: true,
       statusValueOption: [
         {
@@ -475,9 +430,7 @@ export default {
           value: false,
         },
       ],
-      selectDesignationId: "",
-      designationIdOption: [],
-
+   
       pageLength: 10,
       columns: [
         {
@@ -485,20 +438,15 @@ export default {
           field: "name",
         },
         {
+          label: "Email",
+          field: "email",
+        },
+        {
           label: "Role",
           field: this.roleName,
           sortable: false,
         },
-        {
-          label: "Gender",
-          field: "gender",
-          sortable: false,
-        },
-        {
-          label: "Designation",
-          field: "designation.data.name",
-          sortable: false,
-        },
+        
         {
           label: "Status",
           field: "status",
@@ -551,9 +499,9 @@ export default {
 
   async created() {
     try {
-      const [roles, designations] = await Promise.all([
+      const [roles] = await Promise.all([
         this.getRoles(),
-        this.getDesignations(),
+        
       ]);
 
       // roles
@@ -564,15 +512,7 @@ export default {
         };
       });
 
-      // designations
-      this.designationIdOption = (designations?.data?.data || []).map(
-        (item) => {
-          return {
-            name: item?.name,
-            id: item?.id,
-          };
-        }
-      );
+    
     } catch (error) {
       this.$toast({
         component: ToastificationContent,
@@ -606,7 +546,7 @@ export default {
       this.selectStatusValue = true;
       this.password = "";
       this.password_confirmation = "";
-      this.selectDesignationId = "";
+      
     },
     async onShow(value) {
       //   console.log("onShow", value);
@@ -616,8 +556,7 @@ export default {
       this.email = value?.email;
       this.selectRoleId = value?.roles?.data[0]?.id;
       this.selectStatusValue = value?.status;
-      this.selectDesignationId = value?.designation_id;
-      this.selectGenderId = value?.gender;
+     
 
       this.showModal();
     },
@@ -686,7 +625,7 @@ export default {
       this.loadItems();
     },
     async getUsers(params) {
-      return await this.$api.get("api/users?include=roles,designation", {
+      return await this.$api.get("api/users?include=roles", {
         params: {
           show: params.show,
           page: params.page,
@@ -698,9 +637,7 @@ export default {
     async getRoles() {
       return await this.$api.get("api/roles/priority-wise");
     },
-    async getDesignations() {
-      return await this.$api.get("api/designations/all");
-    },
+  
 
     async loadItems() {
       try {
@@ -742,8 +679,6 @@ export default {
                 password: this.password,
                 password_confirmation: this.password_confirmation,
                 role_id: this.selectRoleId,
-                designation_id: this.selectDesignationId,
-                gender: this.selectGenderId,
               });
 
               this.loadItems();
@@ -765,8 +700,6 @@ export default {
                 password: this.password,
                 password_confirmation: this.password_confirmation,
                 role_id: this.selectRoleId,
-                designation_id: this.selectDesignationId,
-                gender: this.selectGenderId,
               });
 
               this.hiddenModal();
