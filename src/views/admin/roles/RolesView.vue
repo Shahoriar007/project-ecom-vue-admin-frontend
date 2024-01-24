@@ -16,7 +16,7 @@
 
           <template
             v-if="
-              $permissionAbility(permissionsConstant.ROLES_CREATE, permissions)
+              $permissionAbility(ROLES_CREATE, permissions)
             "
           >
             <b-button
@@ -74,7 +74,7 @@
                 <template
                   v-if="
                     $permissionAbility(
-                      permissionsConstant.ROLES_SHOW,
+                      ROLES_SHOW,
                       permissions
                     )
                   "
@@ -88,7 +88,7 @@
                 <template
                   v-if="
                     $permissionAbility(
-                      permissionsConstant.ROLES_EDIT,
+                      ROLES_EDIT,
                       permissions
                     )
                   "
@@ -102,7 +102,7 @@
                 <template
                   v-if="
                     $permissionAbility(
-                      permissionsConstant.ROLES_DELETE,
+                      ROLES_DELETE,
                       permissions
                     )
                   "
@@ -221,7 +221,13 @@ import { ValidationObserver, ValidationProvider } from "vee-validate";
 import { VueGoodTable } from "vue-good-table";
 import Ripple from "vue-ripple-directive";
 
-import { permissionsConstant } from "@/helpers/permissionsConstant";
+import {
+ROLES_ACCESS,
+ROLES_CREATE,
+ROLES_DELETE,
+ROLES_EDIT,
+ROLES_SHOW,
+} from "@/helpers/permissionsConstant";
 import ToastificationContent from "@core/components/toastification/ToastificationContent.vue";
 import { mapGetters } from "vuex";
 
@@ -249,7 +255,11 @@ export default {
   },
   data() {
     return {
-      permissionsConstant,
+      ROLES_ACCESS,
+ROLES_CREATE,
+ROLES_SHOW,
+ROLES_EDIT,
+ROLES_DELETE,
       modelType: "",
       roleId: "",
       name: "",

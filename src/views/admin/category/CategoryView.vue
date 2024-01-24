@@ -20,7 +20,7 @@
               variant="primary"
               v-on:click="showModal"
             >
-              Create User
+              Add
             </b-button>
           </template>
         </div>
@@ -55,12 +55,12 @@
         <template slot="table-row" slot-scope="props">
           <!-- Column: head -->
           <span v-if="props.column.field === 'name'">
-            <b-avatar :src="props?.row?.avatar" class="mr-1" />
+            <b-avatar :src="props?.row?.category_image_url" class="mr-1" />
           </span>
 
           <!-- Column: Status -->
           <span v-if="props.column.field === 'status'">
-            <b-badge :variant="statusVariant(props.row.status)">
+            <b-badge :variant="formatStatus(props.row.status)">
               {{ props.row.status ? 'Active' : 'Inactive' }}
             </b-badge>
           </span>
@@ -145,26 +145,61 @@
     </div>
 
     <b-modal
-      id="modal-users-form"
+      id="modal-category-form"
       centered
-      :title="modelType == 'editModel' ? 'Edit User' : 'Create User'"
+      :title="modalType == 'editModal' ? 'Edit Category' : 'Add Category'"
       hide-footer
       @hidden="hiddenModal"
       no-close-on-backdrop
     >
-      <validation-observer ref="usersValidation">
+      <validation-observer ref="validationRef">
         <b-form v-on:submit.prevent="validationForm">
           <b-row>
-            <!-- name -->
+            <b-col
+              cols="12"
+              class="d-flex align-items-center justify-content-center"
+            >
+              <img :src="previewImage" alt="Uploaded Image" id="preview" />
+            </b-col>
+            <b-col cols="12">
+              <b-form-group label="Image" label-for="image">
+                <validation-provider
+                  #default="{ errors }"
+                  name="image"
+                  vid="image"
+                >
+                  <div class="d-flex">
+                    <b-form-file
+                      id="image"
+                      v-model="image"
+                      :state="errors.length > 0 ? false : null"
+                      placeholder="Choose an image or drop it here..."
+                      drop-placeholder="Drop image here... "
+                      @change="loadImage"
+                      accept="image/*"
+                      class="mr-1"
+                    />
+                    <b-button
+                      v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+                      variant="danger"
+                      class="mr-1"
+                      @click="removeImage"
+                    >
+                      Remove
+                    </b-button>
+                  </div>
+
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </validation-provider>
+              </b-form-group>
+            </b-col>
+
             <b-col cols="12">
               <b-form-group label="Name" label-for="name">
                 <validation-provider
                   #default="{ errors }"
                   name="name"
                   vid="name"
-                  :rules="`${
-                    modelType == 'editModel' ? '' : 'required'
-                  }|max:255`"
                 >
                   <b-form-input
                     id="name"
@@ -172,46 +207,40 @@
                     v-model="name"
                     :state="errors.length > 0 ? false : null"
                     name="name"
-                    placeholder="John Doe"
+                    placeholder="Category Name"
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
                 </validation-provider>
               </b-form-group>
             </b-col>
-
-            <!-- email -->
             <b-col cols="12">
-              <b-form-group label="Email" label-for="email">
-                <validation-provider
-                  #default="{ errors }"
-                  name="email"
-                  :rules="`${modelType == 'editModel' ? '' : 'required'}|email`"
-                  vid="email"
+              <b-form-group label="Description" label-for="description">
+                <ValidationProvider
+                  name="description"
+                  v-slot="{ errors }"
+                  vid="description"
                 >
-                  <b-form-input
-                    id="email"
-                    v-model="email"
+                  <b-form-textarea
+                    id="remarks"
+                    type="text"
+                    v-model="description"
                     :state="errors.length > 0 ? false : null"
-                    name="email"
-                    placeholder="john@example.com"
+                    placeholder="Category Description"
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
-                </validation-provider>
+                </ValidationProvider>
               </b-form-group>
             </b-col>
-
-            <!-- status -->
             <b-col cols="12">
               <b-form-group label="Status" label-for="status">
                 <ValidationProvider
                   name="status"
                   v-slot="{ errors }"
                   vid="status"
-                  :rules="`${modelType == 'editModel' ? '' : 'required'}`"
                 >
                   <v-select
                     id="status"
-                    v-model="selectStatusValue"
+                    v-model="status"
                     :options="statusValueOption"
                     :reduce="(option) => option.value"
                     label="name"
@@ -220,99 +249,6 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-
-            <!-- select role-->
-            <b-col cols="12">
-              <b-form-group label="Role" label-for="role-id">
-                <ValidationProvider
-                  name="role_id"
-                  v-slot="{ errors }"
-                  vid="role_id"
-                  :rules="`${modelType == 'editModel' ? '' : 'required'}`"
-                >
-                  <v-select
-                    id="role-id"
-                    placeholder="Choose a role"
-                    v-model="selectRoleId"
-                    :options="roleIdOption"
-                    :reduce="(option) => option.id"
-                    label="name"
-                  />
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </ValidationProvider>
-              </b-form-group>
-            </b-col>
-
-            <!-- password -->
-            <b-col cols="12">
-              <b-form-group label="Password" label-for="password">
-                <validation-provider
-                  #default="{ errors }"
-                  name="password"
-                  :rules="`${modelType == 'editModel' ? '' : 'required'}|min:6`"
-                  vid="password"
-                >
-                  <b-input-group
-                    class="input-group-merge"
-                    :class="errors.length > 0 ? 'is-invalid' : null"
-                  >
-                    <b-form-input
-                      id="password"
-                      v-model="password"
-                      :state="errors.length > 0 ? false : null"
-                      class="form-control-merge"
-                      :type="passwordFieldType"
-                      name="user-password"
-                      placeholder="············"
-                    />
-                    <b-input-group-append
-                      is-text
-                      v-on:click="togglePasswordVisibility"
-                    >
-                      <feather-icon
-                        class="cursor-pointer"
-                        :icon="passwordToggleIcon"
-                      />
-                    </b-input-group-append>
-                  </b-input-group>
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </validation-provider>
-              </b-form-group>
-            </b-col>
-
-            <!-- Confirm Password -->
-            <b-col cols="12">
-              <b-form-group
-                label="Confirm Password"
-                label-for="password_confirmation"
-              >
-                <validation-provider
-                  #default="{ errors }"
-                  name="password_confirmation"
-                  :rules="`${
-                    modelType == 'editModel' ? '' : 'required'
-                  }|confirmed:password`"
-                  vid="password_confirmation"
-                >
-                  <b-input-group
-                    class="input-group-merge"
-                    :class="errors.length > 0 ? 'is-invalid' : null"
-                  >
-                    <b-form-input
-                      id="password_confirmation"
-                      v-model="password_confirmation"
-                      :state="errors.length > 0 ? false : null"
-                      class="form-control-merge"
-                      :type="passwordFieldType"
-                      name="password_confirmation"
-                      placeholder="············"
-                    />
-                  </b-input-group>
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </validation-provider>
-              </b-form-group>
-            </b-col>
-
             <!-- submit and reset -->
             <b-col cols="12">
               <b-button
@@ -332,7 +268,14 @@
 </template>
 
 <script>
-import { email } from '@validations'
+import {
+  USERS_ACCESS,
+  USERS_CREATE,
+  USERS_DELETE,
+  USERS_EDIT,
+  USERS_SHOW,
+} from '@/helpers/permissionsConstant'
+import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import {
   BAvatar,
   BBadge,
@@ -342,9 +285,11 @@ import {
   BDropdown,
   BDropdownItem,
   BForm,
+  BFormFile,
   BFormGroup,
   BFormInput,
   BFormSelect,
+  BFormTextarea,
   BInputGroup,
   BInputGroupAppend,
   BModal,
@@ -354,21 +299,9 @@ import {
 import { ValidationObserver, ValidationProvider } from 'vee-validate'
 import { VueGoodTable } from 'vue-good-table'
 import Ripple from 'vue-ripple-directive'
-
-import {
-  USERS_ACCESS,
-  USERS_CREATE,
-  USERS_DELETE,
-  USERS_EDIT,
-  USERS_SHOW,
-} from '@/helpers/permissionsConstant'
-import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
-import { togglePasswordVisibility } from '@core/mixins/ui/forms'
 import { mapGetters } from 'vuex'
-
 export default {
-  mixins: [togglePasswordVisibility],
-  name: 'UsersView',
+  name: 'CategoryView',
   components: {
     BRow,
     BCol,
@@ -389,6 +322,8 @@ export default {
     BModal,
     BInputGroupAppend,
     BInputGroup,
+    BFormFile,
+    BFormTextarea,
   },
   directives: {
     Ripple,
@@ -400,16 +335,13 @@ export default {
       USERS_SHOW,
       USERS_EDIT,
       USERS_DELETE,
-      modelType: '',
-      userId: '',
+      modalType: '',
+      previewImage: 'https://placehold.co/200x200?text=Upload+Image',
+      id: '',
       name: '',
-      password: '',
-      password_confirmation: '',
-      email: '',
-      selectRoleId: '',
-      roleIdOption: [],
-
-      selectStatusValue: true,
+      description: '',
+      image: null,
+      status: true,
       statusValueOption: [
         {
           name: 'Active',
@@ -428,13 +360,8 @@ export default {
           field: 'name',
         },
         {
-          label: 'Email',
-          field: 'email',
-        },
-        {
-          label: 'Role',
-          field: this.roleName,
-          sortable: false,
+          label: 'Description',
+          field: 'description',
         },
 
         {
@@ -445,6 +372,8 @@ export default {
         {
           label: 'Created On',
           field: 'created_at',
+          formatFn: this.formatFnTableLastContactDate,
+          sortable: true,
         },
         {
           label: 'Action',
@@ -474,78 +403,66 @@ export default {
     ...mapGetters({
       permissions: 'userModule/getPermissions',
     }),
-    passwordToggleIcon() {
-      return this.passwordFieldType === 'password' ? 'EyeIcon' : 'EyeOffIcon'
-    },
-    statusVariant() {
-      const statusColor = {
-        true: 'light-success',
-        false: 'light-danger',
-      }
-
-      return (status) => statusColor[status]
-    },
-  },
-
-  async created() {
-    try {
-      const [roles] = await Promise.all([this.getRoles()])
-
-      // roles
-      this.roleIdOption = (roles?.data?.data || []).map((item) => {
-        return {
-          name: item?.name,
-          id: item?.id,
-        }
-      })
-    } catch (error) {
-      this.$toast({
-        component: ToastificationContent,
-        props: {
-          title: 'Error',
-          icon: 'BellIcon',
-          variant: 'danger',
-          text: error?.response?.data?.message,
-        },
-      })
-    }
   },
 
   methods: {
-    roleName(rowObj) {
-      return rowObj?.roles?.data[0]?.name
+    formatStatus(status) {
+      if (status) {
+        return 'light-success'
+      }
+      return 'light-danger'
+    },
+    formatFnTableLastContactDate(value) {
+      if (value) {
+        return this.$moment(value).format('MMM Do YYYY, h:mm a')
+      }
+    },
+    removeImage() {
+      this.previewImage = 'https://placehold.co/200x200?text=Upload+Image'
+      this.image = null
+    },
+    loadImage(event) {
+      const fileInput = event.target
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader()
+
+        reader.onload = (e) => {
+          this.previewImage = e.target.result
+        }
+
+        reader.readAsDataURL(fileInput.files[0])
+      }
     },
     showModal() {
-      this.$bvModal.show('modal-users-form')
+      this.$bvModal.show('modal-category-form')
     },
     hiddenModal() {
-      this.modelType = ''
-      this.$bvModal.hide('modal-users-form')
+      this.modalType = ''
+      this.$bvModal.hide('modal-category-form')
       this.resetModal()
     },
     resetModal() {
-      this.userId = ''
+      this.id = ''
       this.name = ''
-      this.selectRoleId = ''
-      this.email = ''
-      this.selectStatusValue = true
-      this.password = ''
-      this.password_confirmation = ''
+      this.description = ''
+      this.previewImage = 'https://placehold.co/200x200?text=Upload+Image'
+      this.image = null
+      this.status = true
     },
     async onShow(value) {
-      //   console.log("onShow", value);
-      this.modelType = 'editModel'
-      this.userId = value?.id
+      this.modalType = 'editModal'
+      this.id = value?.id
       this.name = value?.name
-      this.email = value?.email
-      this.selectRoleId = value?.roles?.data[0]?.id
-      this.selectStatusValue = value?.status
+      this.description = value?.description
+      this.previewImage = value?.category_image_url
+      this.status = true
 
       this.showModal()
     },
     async onDelete(id) {
       try {
-        await this.$api.delete(`/api/users/${id}`)
+        await this.$api.delete(`/api/categories/${id}`)
 
         this.loadItems()
 
@@ -555,7 +472,7 @@ export default {
             title: 'Success',
             icon: 'BellIcon',
             variant: 'success',
-            text: 'User successfully Deleted',
+            text: 'Category Successfully Deleted',
           },
         })
       } catch (error) {
@@ -608,7 +525,7 @@ export default {
       this.loadItems()
     },
     async getUsers(params) {
-      return await this.$api.get('api/users?include=roles', {
+      return await this.$api.get('api/categories', {
         params: {
           show: params.show,
           page: params.page,
@@ -617,13 +534,10 @@ export default {
         },
       })
     },
-    async getRoles() {
-      return await this.$api.get('api/roles/priority-wise')
-    },
 
     async loadItems() {
       try {
-        const [users] = await Promise.all([
+        const [categories] = await Promise.all([
           this.getUsers({
             show: this.serverParams.perPage,
             page: this.serverParams.page,
@@ -632,8 +546,8 @@ export default {
           }),
         ])
 
-        const data = users?.data?.data
-        const meta = users?.data?.meta
+        const data = categories?.data?.data
+        const meta = categories?.data?.meta
 
         this.totalRecords = meta?.pagination?.total
         this.rows = data
@@ -650,17 +564,41 @@ export default {
       }
     },
     validationForm: async function () {
-      this.$refs.usersValidation.validate().then(async (success) => {
+      this.$refs.validationRef.validate().then(async (success) => {
         if (success) {
           try {
-            if (this.modelType == 'editModel') {
-              await this.$api.put(`/api/users/${this.userId}`, {
-                name: this.name,
-                email: this.email,
-                status: this.selectStatusValue,
-                password: this.password,
-                password_confirmation: this.password_confirmation,
-                role_id: this.selectRoleId,
+            const formData = new FormData()
+
+            if (this.name) {
+              formData.append('name', this.name)
+            }
+            if (this.description) {
+              formData.append('description', this.description)
+            }
+            if (this.status) {
+              formData.append('status', 1)
+            } else {
+              formData.append('status', 0)
+            }
+
+            if (this.image) {
+              formData.append('image', this.image)
+            }
+
+            if (this.modalType == 'editModal') {
+              if (
+                this.previewImage ==
+                'https://placehold.co/200x200?text=Upload+Image'
+              ) {
+                formData.append('image_exists', 0)
+              } else {
+                formData.append('image_exists', 1)
+              }
+              formData.append('_method', 'PUT')
+              await this.$api.post(`/api/categories/${this.id}`, formData, {
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                },
               })
 
               this.loadItems()
@@ -671,17 +609,14 @@ export default {
                   title: 'Success',
                   icon: 'BellIcon',
                   variant: 'success',
-                  text: 'User successfully Updated',
+                  text: 'Category Successfully Updated',
                 },
               })
             } else {
-              await this.$api.post('/api/users', {
-                name: this.name,
-                email: this.email,
-                status: this.selectStatusValue,
-                password: this.password,
-                password_confirmation: this.password_confirmation,
-                role_id: this.selectRoleId,
+              await this.$api.post('/api/categories', formData, {
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                },
               })
 
               this.hiddenModal()
@@ -694,7 +629,7 @@ export default {
                   title: 'Success',
                   icon: 'BellIcon',
                   variant: 'success',
-                  text: 'User successfully Created',
+                  text: 'Category Successfully Created',
                 },
               })
             }
@@ -712,9 +647,7 @@ export default {
             }
 
             if (error?.response?.data?.errors) {
-              this.$refs.usersValidation.setErrors(
-                error?.response?.data?.errors
-              )
+              this.$refs.validationRef.setErrors(error?.response?.data?.errors)
             }
           }
         }
@@ -726,4 +659,8 @@ export default {
 
 <style lang="scss">
 @import '@core/scss/vue/libs/vue-good-table.scss';
+#preview {
+  max-width: 100%;
+  max-height: 300px;
+}
 </style>
