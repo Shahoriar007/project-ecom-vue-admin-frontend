@@ -1,18 +1,17 @@
-
-import { CATEGORIES_ACCESS } from "@/helpers/permissionsConstant";
+import { PRODUCTS_ACCESS } from "@/helpers/permissionsConstant";
 export default [
   {
-    path: "/admin/categories",
-    name: "admin-categories",
-    component: () => import("@/views/admin/category/CategoryView.vue"),
+    path: "/admin/products",
+    name: "admin-products",
+    component: () => import("@/views/admin/product/ProductView.vue"),
     meta: {
-      gate: CATEGORIES_ACCESS,
+      gate: PRODUCTS_ACCESS,
       requiresAuth: true,
-      pageTitle: "Category",
+      pageTitle: "Product",
       homePatch: "/admin/dashboard",
       breadcrumb: [
         {
-          text: "Categories",
+          text: "Products",
           active: true,
           to: "",
         },

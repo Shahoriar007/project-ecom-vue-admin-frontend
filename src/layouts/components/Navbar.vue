@@ -17,7 +17,6 @@
     </div>
 
     <b-navbar-nav class="nav align-items-center ml-auto">
-     
       <b-nav-item-dropdown
         right
         toggle-class="d-flex align-items-center dropdown-user-link"
@@ -86,18 +85,17 @@
 </template>
 
 <script>
-import AttendanceCheckInOut from "@/views/admin/attendance/AttendanceCheckInOut.vue";
-import ToastificationContent from "@core/components/toastification/ToastificationContent.vue";
-import DarkToggler from "@core/layouts/components/app-navbar/components/DarkToggler.vue";
+import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
+import DarkToggler from '@core/layouts/components/app-navbar/components/DarkToggler.vue'
 import {
-BAvatar,
-BDropdownDivider,
-BDropdownItem,
-BLink,
-BNavItemDropdown,
-BNavbarNav,
-} from "bootstrap-vue";
-import { mapGetters } from "vuex";
+  BAvatar,
+  BDropdownDivider,
+  BDropdownItem,
+  BLink,
+  BNavItemDropdown,
+  BNavbarNav,
+} from 'bootstrap-vue'
+import { mapGetters } from 'vuex'
 
 export default {
   components: {
@@ -107,7 +105,6 @@ export default {
     BDropdownItem,
     BDropdownDivider,
     BAvatar,
-    AttendanceCheckInOut,
 
     // Navbar Components
     DarkToggler,
@@ -120,42 +117,42 @@ export default {
   },
   computed: {
     ...mapGetters({
-      user: "userModule/getUser",
+      user: 'userModule/getUser',
     }),
     avatar() {
-      return require("@/assets/images/avatars/avatar.webp");
+      return require('@/assets/images/avatars/avatar.webp')
     },
   },
   methods: {
     onLogout: async function () {
       try {
-        await this.$api.post("api/logout");
+        await this.$api.post('api/logout')
 
-        await this.$store.dispatch("authModule/setIsAuthenticated", {
+        await this.$store.dispatch('authModule/setIsAuthenticated', {
           isAuthenticated: false,
           token: null,
-        });
+        })
 
-        await this.$store.dispatch("authModule/clearPersistedState");
+        await this.$store.dispatch('authModule/clearPersistedState')
 
-        await this.$store.dispatch("userModule/removeUser");
+        await this.$store.dispatch('userModule/removeUser')
 
-        await this.$store.dispatch("userModule/setPermissions", {
+        await this.$store.dispatch('userModule/setPermissions', {
           permissions: null,
-        });
+        })
 
-        this.$router.replace({ name: "login" });
+        this.$router.replace({ name: 'login' })
       } catch (error) {
         this.$toast({
           component: ToastificationContent,
           props: {
             title: `${error?.response?.data?.message}`,
-            icon: "BellIcon",
-            variant: "danger",
+            icon: 'BellIcon',
+            variant: 'danger',
           },
-        });
+        })
       }
     },
   },
-};
+}
 </script>

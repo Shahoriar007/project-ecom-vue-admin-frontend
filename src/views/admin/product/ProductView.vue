@@ -13,7 +13,7 @@
             type="text"
             class="d-inline-block mr-sm-1 mb-1 mb-sm-0"
           />
-          <template v-if="$permissionAbility(CATEGORIES_CREATE, permissions)">
+          <template v-if="$permissionAbility(PRODUCTS_CREATE, permissions)">
             <b-button
               class="flex-shrink-0"
               v-ripple.400="'rgba(255, 255, 255, 0.15)'"
@@ -55,7 +55,10 @@
         <template slot="table-row" slot-scope="props">
           <!-- Column: head -->
           <span v-if="props.column.field === 'name'">
-            <b-avatar :src="props?.row?.category_image_url" class="mr-1" />
+            <b-avatar
+              :src="props?.row?.product_image_urls[0]?.original_url"
+              class="mr-1"
+            />
           </span>
 
           <!-- Column: Status -->
@@ -80,17 +83,15 @@
                     class="text-body align-middle mr-25"
                   />
                 </template>
-                <template
-                  v-if="$permissionAbility(CATEGORIES_EDIT, permissions)"
-                >
+                <template v-if="$permissionAbility(PRODUCTS_EDIT, permissions)">
                   <b-dropdown-item v-on:click="onShow(props.row)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
-                    <span>Edit</span>
+                    <span>Show/ Edit Details</span>
                   </b-dropdown-item>
                 </template>
 
                 <template
-                  v-if="$permissionAbility(CATEGORIES_DELETE, permissions)"
+                  v-if="$permissionAbility(PRODUCTS_DELETE, permissions)"
                 >
                   <b-dropdown-item v-on:click="onDelete(props.row.id)">
                     <feather-icon icon="TrashIcon" class="mr-50" />
@@ -149,21 +150,57 @@
     </div>
 
     <b-modal
-      id="modal-category-form"
+      id="modal-product-form"
       centered
-      :title="modalType == 'editModal' ? 'Edit Category' : 'Add Category'"
+      :title="modalType == 'editModal' ? 'Edit Product' : 'Add Product'"
       hide-footer
       @hidden="hiddenModal"
       no-close-on-backdrop
+      size="lg"
     >
       <validation-observer ref="validationRef">
         <b-form v-on:submit.prevent="validationForm">
           <b-row>
             <b-col
               cols="12"
-              class="d-flex align-items-center justify-content-center"
+              v-if="modalType == 'editModal' && previewImageArray.length > 0"
+              class="mb-1"
             >
-              <img :src="previewImage" alt="Uploaded Image" id="preview" />
+              <h5>Uploaded Images</h5>
+              <div
+                class="d-flex justify-content-center"
+                style="overflow-x: auto"
+              >
+                <div
+                  v-for="(image, index) in previewImageArray"
+                  :key="index"
+                  class="image-container"
+                >
+                  <img :src="image.preview" alt="Preview" class="mr-1" />
+                </div>
+              </div>
+            </b-col>
+            <b-col cols="12">
+              <h5>New Images</h5>
+              <div
+                v-if="imageArray.length > 0"
+                class="d-flex justify-content-center"
+                style="overflow-x: auto"
+              >
+                <div
+                  v-for="(image, index) in imageArray"
+                  :key="index"
+                  class="image-container"
+                >
+                  <img :src="image.preview" alt="Preview" class="mr-1" />
+                </div>
+              </div>
+              <div
+                v-else
+                class="d-flex align-items-center justify-content-center"
+              >
+                <img :src="previewImage" alt="Preview" />
+              </div>
             </b-col>
             <b-col cols="12">
               <b-form-group label="Image" label-for="image">
@@ -198,7 +235,7 @@
               </b-form-group>
             </b-col>
 
-            <b-col cols="12">
+            <b-col cols="6">
               <b-form-group label="Name" label-for="name">
                 <validation-provider
                   #default="{ errors }"
@@ -211,31 +248,13 @@
                     v-model="name"
                     :state="errors.length > 0 ? false : null"
                     name="name"
-                    placeholder="Category Name"
+                    placeholder="Product Name"
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
                 </validation-provider>
               </b-form-group>
             </b-col>
-            <b-col cols="12">
-              <b-form-group label="Description" label-for="description">
-                <ValidationProvider
-                  name="description"
-                  v-slot="{ errors }"
-                  vid="description"
-                >
-                  <b-form-textarea
-                    id="remarks"
-                    type="text"
-                    v-model="description"
-                    :state="errors.length > 0 ? false : null"
-                    placeholder="Category Description"
-                  />
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </ValidationProvider>
-              </b-form-group>
-            </b-col>
-            <b-col cols="12">
+            <b-col cols="6">
               <b-form-group label="Status" label-for="status">
                 <ValidationProvider
                   name="status"
@@ -253,6 +272,234 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
+            <b-col cols="6">
+              <b-form-group label="Description" label-for="description">
+                <ValidationProvider
+                  name="description"
+                  v-slot="{ errors }"
+                  vid="description"
+                >
+                  <b-form-textarea
+                    id="remarks"
+                    type="text"
+                    v-model="description"
+                    :state="errors.length > 0 ? false : null"
+                    placeholder="Product Description"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+            <b-col cols="6">
+              <b-form-group label="Offer Notice" label-for="offer_notice">
+                <ValidationProvider
+                  name="offer_notice"
+                  v-slot="{ errors }"
+                  vid="offer_notice"
+                >
+                  <b-form-textarea
+                    id="offer_notice"
+                    type="text"
+                    v-model="offerNotice"
+                    :state="errors.length > 0 ? false : null"
+                    placeholder="Product Offer Notice"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+
+            <b-col cols="4">
+              <b-form-group label="Category " label-for="category_id">
+                <ValidationProvider
+                  name="category_id"
+                  v-slot="{ errors }"
+                  vid="category_id"
+                >
+                  <v-select
+                    id="category_id"
+                    v-model="categoryId"
+                    :options="categoryOptions"
+                    :reduce="(option) => option.id"
+                    label="name"
+                    placeholder="Select Product Category"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+            <b-col cols="4">
+              <b-form-group label="SKU Code " label-for="sku_code">
+                <ValidationProvider
+                  name="sku_code"
+                  v-slot="{ errors }"
+                  vid="sku_code"
+                >
+                  <b-form-input
+                    id="sku_code"
+                    type="text"
+                    v-model="skuCode"
+                    :state="errors.length > 0 ? false : null"
+                    name="sku_code"
+                    placeholder="Product SKU Code"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+            <b-col cols="4">
+              <b-form-group label="Quantity " label-for="quantity">
+                <ValidationProvider
+                  name="quantity"
+                  v-slot="{ errors }"
+                  vid="quantity"
+                >
+                  <b-form-input
+                    id="quantity"
+                    type="number"
+                    v-model="quantity"
+                    :state="errors.length > 0 ? false : null"
+                    name="quantity"
+                    placeholder="Product Quantity"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+
+            <b-col cols="4">
+              <b-form-group label="Price " label-for="price">
+                <ValidationProvider
+                  name="price"
+                  v-slot="{ errors }"
+                  vid="price"
+                >
+                  <b-form-input
+                    id="price"
+                    type="number"
+                    v-model="price"
+                    :state="errors.length > 0 ? false : null"
+                    name="price"
+                    placeholder="Product Price"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+
+            <b-col cols="4">
+              <b-form-group label="Regular Price " label-for="regular_price">
+                <ValidationProvider
+                  name="regularPrice"
+                  v-slot="{ errors }"
+                  vid="regularPrice"
+                >
+                  <b-form-input
+                    id="regularPrice"
+                    type="number"
+                    v-model="regularPrice"
+                    :state="errors.length > 0 ? false : null"
+                    name="regularPrice"
+                    placeholder="Product Regular Price"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+
+            <b-col cols="4">
+              <b-form-group label="Sale Price " label-for="sale_price">
+                <ValidationProvider
+                  name="sale_price"
+                  v-slot="{ errors }"
+                  vid="sale_price"
+                >
+                  <b-form-input
+                    id="sale_price"
+                    type="number"
+                    v-model="salePrice"
+                    :state="errors.length > 0 ? false : null"
+                    name="sale_price"
+                    placeholder="Product Sale Price"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+
+            <b-col cols="3">
+              <b-form-group label="Flash Sale" label-for="is_flash_sale">
+                <ValidationProvider
+                  name="is_flash_sale"
+                  v-slot="{ errors }"
+                  vid="is_flash_sale"
+                >
+                  <v-select
+                    id="is_flash_sale"
+                    v-model="isFlashSale"
+                    :options="statusValueOption"
+                    :reduce="(option) => option.value"
+                    label="name"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+            <b-col cols="3">
+              <b-form-group label="New Arrival" label-for="is_new_arrival">
+                <ValidationProvider
+                  name="is_new_arrival"
+                  v-slot="{ errors }"
+                  vid="is_new_arrival"
+                >
+                  <v-select
+                    id="is_new_arrival"
+                    v-model="isNewArrival"
+                    :options="statusValueOption"
+                    :reduce="(option) => option.value"
+                    label="name"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+            <b-col cols="3">
+              <b-form-group label="Hot Deal" label-for="is_hot_deal">
+                <ValidationProvider
+                  name="is_hot_deal"
+                  v-slot="{ errors }"
+                  vid="is_hot_deal"
+                >
+                  <v-select
+                    id="is_hot_deal"
+                    v-model="isHotDeal"
+                    :options="statusValueOption"
+                    :reduce="(option) => option.value"
+                    label="name"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+            <b-col cols="3">
+              <b-form-group label="For You" label-for="is_for_you">
+                <ValidationProvider
+                  name="is_for_you"
+                  v-slot="{ errors }"
+                  vid="is_for_you"
+                >
+                  <v-select
+                    id="is_for_you"
+                    v-model="isForYou"
+                    :options="statusValueOption"
+                    :reduce="(option) => option.value"
+                    label="name"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+
             <!-- submit and reset -->
             <b-col cols="12">
               <b-button
@@ -273,10 +520,10 @@
 
 <script>
 import {
-  CATEGORIES_CREATE,
-  CATEGORIES_DELETE,
-  CATEGORIES_EDIT,
-  CATEGORIES_SHOW,
+  PRODUCTS_CREATE,
+  PRODUCTS_DELETE,
+  PRODUCTS_EDIT,
+  PRODUCTS_SHOW,
 } from '@/helpers/permissionsConstant'
 import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import {
@@ -304,7 +551,7 @@ import { VueGoodTable } from 'vue-good-table'
 import Ripple from 'vue-ripple-directive'
 import { mapGetters } from 'vuex'
 export default {
-  name: 'CategoryView',
+  name: 'ProductView',
   components: {
     BRow,
     BCol,
@@ -333,15 +580,18 @@ export default {
   },
   data() {
     return {
-      CATEGORIES_SHOW,
-      CATEGORIES_CREATE,
-      CATEGORIES_EDIT,
-      CATEGORIES_DELETE,
+      PRODUCTS_SHOW,
+      PRODUCTS_CREATE,
+      PRODUCTS_EDIT,
+      PRODUCTS_DELETE,
+      imageArray: [],
+      previewImageArray: [],
       modalType: '',
       previewImage: 'https://placehold.co/200x200?text=Upload+Image',
       id: '',
       name: '',
       description: '',
+      offerNotice: '',
       image: null,
       status: true,
       statusValueOption: [
@@ -354,6 +604,17 @@ export default {
           value: false,
         },
       ],
+      categoryOptions: [],
+      categoryId: '',
+      skuCode: '',
+      quantity: '',
+      price: '',
+      regularPrice: '',
+      salePrice: '',
+      isFlashSale: true,
+      isNewArrival: true,
+      isHotDeal: true,
+      isForYou: true,
 
       pageLength: 10,
       columns: [
@@ -364,8 +625,18 @@ export default {
         {
           label: 'Description',
           field: 'description',
+          sortable: false,
         },
-
+        {
+          label: 'Price',
+          field: 'price',
+          sortable: false,
+        },
+        {
+          label: 'Quantity',
+          field: 'quantity',
+          sortable: false,
+        },
         {
           label: 'Status',
           field: 'status',
@@ -407,6 +678,19 @@ export default {
     }),
   },
 
+  async created() {
+    const categories = await this.getActiveCategories()
+
+    this.categoryOptions = (categories?.data?.data || []).map((item) => {
+      let name = item.name
+
+      return {
+        name,
+        id: item.id,
+      }
+    })
+  },
+
   methods: {
     formatStatus(status) {
       if (status) {
@@ -420,8 +704,11 @@ export default {
       }
     },
     removeImage() {
-      this.previewImage = 'https://placehold.co/200x200?text=Upload+Image'
-      this.image = null
+      if (this.imageArray.length > 0) {
+        this.imageArray.pop()
+      } else {
+        this.previewImage = 'https://placehold.co/200x200?text=Upload+Image'
+      }
     },
     loadImage(event) {
       const fileInput = event.target
@@ -430,41 +717,74 @@ export default {
         const reader = new FileReader()
 
         reader.onload = (e) => {
-          this.previewImage = e.target.result
+          this.imageArray.push({
+            file: fileInput.files[0],
+            preview: e.target.result,
+          })
         }
 
         reader.readAsDataURL(fileInput.files[0])
       }
     },
+
+    async getActiveCategories() {
+      return await this.$api.get('api/categories/active-all')
+    },
     showModal() {
-      this.$bvModal.show('modal-category-form')
+      this.$bvModal.show('modal-product-form')
     },
     hiddenModal() {
       this.modalType = ''
-      this.$bvModal.hide('modal-category-form')
+      this.$bvModal.hide('modal-product-form')
       this.resetModal()
     },
     resetModal() {
       this.id = ''
       this.name = ''
       this.description = ''
+      this.offerNotice = ''
+      this.imageArray = []
       this.previewImage = 'https://placehold.co/200x200?text=Upload+Image'
-      this.image = null
       this.status = true
+      this.categoryId = ''
+      this.skuCode = ''
+      this.quantity = ''
+      this.price = ''
+      this.regularPrice = ''
+      this.salePrice = ''
+      this.isFlashSale = true
+      this.isNewArrival = true
+      this.isHotDeal = true
+      this.isForYou = true
     },
     async onShow(value) {
       this.modalType = 'editModal'
       this.id = value?.id
       this.name = value?.name
       this.description = value?.description
-      this.previewImage = value?.category_image_url
+      this.offerNotice = value?.offer_notice
+      this.previewImageArray = (value?.product_image_urls || []).map((item) => {
+        return {
+          preview: item?.original_url,
+        }
+      })
       this.status = value?.status ? true : false
+      this.categoryId = value?.category_id
+      this.skuCode = value?.sku_code
+      this.quantity = value?.quantity
+      this.price = value?.price
+      this.regularPrice = value?.regular_price
+      this.salePrice = value?.sale_price
+      this.isFlashSale = value?.is_flash_sale ? true : false
+      this.isNewArrival = value?.is_new_arrival ? true : false
+      this.isHotDeal = value?.is_hot_deal ? true : false
+      this.isForYou = value?.is_for_you ? true : false
 
       this.showModal()
     },
     async onDelete(id) {
       try {
-        await this.$api.delete(`/api/categories/${id}`)
+        await this.$api.delete(`/api/products/${id}`)
 
         this.loadItems()
 
@@ -474,7 +794,7 @@ export default {
             title: 'Success',
             icon: 'BellIcon',
             variant: 'success',
-            text: 'Category Successfully Deleted',
+            text: 'Product Successfully Deleted',
           },
         })
       } catch (error) {
@@ -526,8 +846,8 @@ export default {
       this.updateParams(params)
       this.loadItems()
     },
-    async getUsers(params) {
-      return await this.$api.get('api/categories', {
+    async getProducts(params) {
+      return await this.$api.get('api/products', {
         params: {
           show: params.show,
           page: params.page,
@@ -539,8 +859,8 @@ export default {
 
     async loadItems() {
       try {
-        const [categories] = await Promise.all([
-          this.getUsers({
+        const [products] = await Promise.all([
+          this.getProducts({
             show: this.serverParams.perPage,
             page: this.serverParams.page,
             sort: this.serverParams.sort,
@@ -548,8 +868,8 @@ export default {
           }),
         ])
 
-        const data = categories?.data?.data
-        const meta = categories?.data?.meta
+        const data = products?.data?.data
+        const meta = products?.data?.meta
 
         this.totalRecords = meta?.pagination?.total
         this.rows = data
@@ -577,27 +897,58 @@ export default {
             if (this.description) {
               formData.append('description', this.description)
             }
+            if (this.offerNotice) {
+              formData.append('offer_notice', this.offerNotice)
+            }
             if (this.status) {
               formData.append('status', 1)
             } else {
               formData.append('status', 0)
             }
+            if (this.categoryId) {
+              formData.append('category_id', this.categoryId)
+            }
+            if (this.skuCode) {
+              formData.append('sku_code', this.skuCode)
+            }
+            formData.append('quantity', this.quantity)
 
-            if (this.image) {
-              formData.append('image', this.image)
+            if (this.price) {
+              formData.append('price', this.price)
+            }
+            if (this.regularPrice) {
+              formData.append('regular_price', this.regularPrice)
+            }
+            if (this.salePrice) {
+              formData.append('sale_price', this.salePrice)
             }
 
+            if (this.isFlashSale) {
+              formData.append('is_flash_sale', 1)
+            } else {
+              formData.append('is_flash_sale', 0)
+            }
+            if (this.isNewArrival) {
+              formData.append('is_new_arrival', 1)
+            } else {
+              formData.append('is_new_arrival', 0)
+            }
+            if (this.isHotDeal) {
+              formData.append('is_hot_deal', 1)
+            } else {
+              formData.append('is_hot_deal', 0)
+            }
+            if (this.isForYou) {
+              formData.append('is_for_you', 1)
+            } else {
+              formData.append('is_for_you', 0)
+            }
+            this.imageArray.forEach((image) => {
+              formData.append(`images[]`, image.file)
+            })
             if (this.modalType == 'editModal') {
-              if (
-                this.previewImage ==
-                'https://placehold.co/200x200?text=Upload+Image'
-              ) {
-                formData.append('image_exists', 0)
-              } else {
-                formData.append('image_exists', 1)
-              }
               formData.append('_method', 'PUT')
-              await this.$api.post(`/api/categories/${this.id}`, formData, {
+              await this.$api.post(`/api/products/${this.id}`, formData, {
                 headers: {
                   'Content-Type': 'multipart/form-data',
                 },
@@ -615,7 +966,7 @@ export default {
                 },
               })
             } else {
-              await this.$api.post('/api/categories', formData, {
+              await this.$api.post('/api/products', formData, {
                 headers: {
                   'Content-Type': 'multipart/form-data',
                 },
@@ -664,5 +1015,9 @@ export default {
 #preview {
   max-width: 100%;
   max-height: 300px;
+}
+.image-container {
+  max-width: 100%; /* Ensures images don't exceed the width of their container */
+  max-height: 100%; /* Optional: Limits the height if needed */
 }
 </style>
