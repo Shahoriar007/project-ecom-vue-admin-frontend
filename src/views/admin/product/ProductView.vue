@@ -1160,4 +1160,8 @@ export default {
     text-align: center !important;
   }
 }
+
+.custom-font {
+  font-size: 13px !important;
+}
 </style>
