@@ -27,9 +27,11 @@
       </div>
 
       <!-- table -->
+
       <vue-good-table
-        :line-numbers="true"
         mode="remote"
+        style-class="vgt-table table-custom-style bordered condensed"
+        :line-numbers="true"
         @on-page-change="onPageChange"
         @on-sort-change="onSortChange"
         @on-column-filter="onColumnFilter"
@@ -202,7 +204,7 @@
                 <img :src="previewImage" alt="Preview" />
               </div>
             </b-col>
-            <b-col cols="12">
+            <b-col md="12" lg="12" xs="12">
               <b-form-group label="Image" label-for="image">
                 <validation-provider
                   #default="{ errors }"
@@ -235,7 +237,7 @@
               </b-form-group>
             </b-col>
 
-            <b-col cols="6">
+            <b-col md="6" lg="6" xs="12">
               <b-form-group label="Name" label-for="name">
                 <validation-provider
                   #default="{ errors }"
@@ -254,7 +256,7 @@
                 </validation-provider>
               </b-form-group>
             </b-col>
-            <b-col cols="6">
+            <b-col md="6" lg="6" xs="12">
               <b-form-group label="Status" label-for="status">
                 <ValidationProvider
                   name="status"
@@ -272,44 +274,149 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="6">
+            <b-col md="12" lg="12" xs="12">
               <b-form-group label="Description" label-for="description">
                 <ValidationProvider
                   name="description"
                   v-slot="{ errors }"
                   vid="description"
                 >
-                  <b-form-textarea
+                  <!-- <b-form-textarea
                     id="remarks"
                     type="text"
                     v-model="description"
                     :state="errors.length > 0 ? false : null"
                     placeholder="Product Description"
-                  />
+                  /> -->
+
+                  <quill-editor
+                    v-model="description"
+                    :options="editorOption"
+                    :style="{
+                      height: '13rem !important',
+                      paddingBottom: '5rem !important',
+                    }"
+                  >
+                    <div id="toolbar" slot="toolbar">
+                      <span class="ql-formats">
+                        <button class="ql-bold">Bold</button>
+                        <button class="ql-italic">Italic</button>
+                        <button class="ql-underline">Underline</button>
+                        <button class="ql-strike">Strike</button>
+                        <button class="ql-blockquote"></button>
+                        <button class="ql-list" value="ordered"></button>
+                        <button class="ql-list" value="bullet"></button>
+                        <button class="ql-script" value="sub"></button>
+                        <button class="ql-script" value="super"></button>
+                        <button class="ql-indent" value="-1"></button>
+                        <button class="ql-indent" value="+1"></button>
+                        <button class="ql-direction" value="rtl"></button>
+                        <button class="ql-align" value=""></button>
+                        <button class="ql-align" value="center"></button>
+                        <button class="ql-align" value="right"></button>
+                        <button class="ql-align" value="justify"></button>
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                        <select class="ql-size">
+                          <option value="small" />
+
+                          <option selected />
+                          <option value="large" />
+                          <option value="huge" />
+                        </select>
+
+                        <select class="ql-font"></select>
+                        <select class="ql-header">
+                          <option value="1">Heading 1</option>
+                          <option value="2">Heading 2</option>
+                          <option value="3">Heading 3</option>
+                          <option value="4">Heading 4</option>
+                          <option value="5">Heading 5</option>
+                          <option value="6">Heading 6</option>
+                          <option selected>Normal</option>
+                        </select>
+
+                        <button class="ql-link"></button>
+                      </span>
+                    </div>
+                  </quill-editor>
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="6">
+            <b-col md="12" lg="12" xs="12">
               <b-form-group label="Offer Notice" label-for="offer_notice">
                 <ValidationProvider
                   name="offer_notice"
                   v-slot="{ errors }"
                   vid="offer_notice"
                 >
-                  <b-form-textarea
+                  <!-- <b-form-textarea
                     id="offer_notice"
                     type="text"
                     v-model="offerNotice"
                     :state="errors.length > 0 ? false : null"
                     placeholder="Product Offer Notice"
-                  />
+                  /> -->
+
+                  <!-- Second Quill Editor -->
+                  <quill-editor
+                    v-model="offerNotice"
+                    :options="editorOption2"
+                    :style="{
+                      height: '13rem !important',
+                      paddingBottom: '5rem !important',
+                    }"
+                  >
+                    <div id="toolbar2" slot="toolbar">
+                      <span class="ql-formats">
+                        <button class="ql-bold">Bold</button>
+                        <button class="ql-italic">Italic</button>
+                        <button class="ql-underline">Underline</button>
+                        <button class="ql-strike">Strike</button>
+                        <button class="ql-blockquote"></button>
+                        <button class="ql-list" value="ordered"></button>
+                        <button class="ql-list" value="bullet"></button>
+                        <button class="ql-script" value="sub"></button>
+                        <button class="ql-script" value="super"></button>
+                        <button class="ql-indent" value="-1"></button>
+                        <button class="ql-indent" value="+1"></button>
+                        <button class="ql-direction" value="rtl"></button>
+                        <button class="ql-align" value=""></button>
+                        <button class="ql-align" value="center"></button>
+                        <button class="ql-align" value="right"></button>
+                        <button class="ql-align" value="justify"></button>
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                        <select class="ql-size">
+                          <option value="small" />
+
+                          <option selected />
+                          <option value="large" />
+                          <option value="huge" />
+                        </select>
+
+                        <select class="ql-font"></select>
+                        <select class="ql-header">
+                          <option value="1">Heading 1</option>
+                          <option value="2">Heading 2</option>
+                          <option value="3">Heading 3</option>
+                          <option value="4">Heading 4</option>
+                          <option value="5">Heading 5</option>
+                          <option value="6">Heading 6</option>
+                          <option selected>Normal</option>
+                        </select>
+
+                        <button class="ql-link"></button>
+                      </span>
+                    </div>
+                  </quill-editor>
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
             </b-col>
 
-            <b-col cols="4">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="Category " label-for="category_id">
                 <ValidationProvider
                   name="category_id"
@@ -328,7 +435,7 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="4">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="SKU Code " label-for="sku_code">
                 <ValidationProvider
                   name="sku_code"
@@ -347,7 +454,7 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="4">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="Quantity " label-for="quantity">
                 <ValidationProvider
                   name="quantity"
@@ -361,33 +468,14 @@
                     :state="errors.length > 0 ? false : null"
                     name="quantity"
                     placeholder="Product Quantity"
+                    @wheel.prevent
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
             </b-col>
 
-            <b-col cols="4">
-              <b-form-group label="Price " label-for="price">
-                <ValidationProvider
-                  name="price"
-                  v-slot="{ errors }"
-                  vid="price"
-                >
-                  <b-form-input
-                    id="price"
-                    type="number"
-                    v-model="price"
-                    :state="errors.length > 0 ? false : null"
-                    name="price"
-                    placeholder="Product Price"
-                  />
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </ValidationProvider>
-              </b-form-group>
-            </b-col>
-
-            <b-col cols="4">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="Regular Price " label-for="regular_price">
                 <ValidationProvider
                   name="regularPrice"
@@ -407,7 +495,7 @@
               </b-form-group>
             </b-col>
 
-            <b-col cols="4">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="Sale Price " label-for="sale_price">
                 <ValidationProvider
                   name="sale_price"
@@ -427,7 +515,31 @@
               </b-form-group>
             </b-col>
 
-            <b-col cols="3">
+            <b-col md="4" lg="4" xs="12">
+              <b-form-group label="Label" label-for="labels">
+                <ValidationProvider
+                  name="labels"
+                  v-slot="{ errors }"
+                  vid="labels"
+                >
+                  <v-select
+                    :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
+                    id="labels"
+                    class="custom-font"
+                    placeholder="Add Label"
+                    v-model="selectLabels"
+                    label="name"
+                    multiple
+                    taggable
+                    push-tags
+                  >
+                  </v-select>
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+
+            <b-col md="3" lg="3" xs="12">
               <b-form-group label="Flash Sale" label-for="is_flash_sale">
                 <ValidationProvider
                   name="is_flash_sale"
@@ -445,7 +557,7 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="3">
+            <b-col md="3" lg="3" xs="12">
               <b-form-group label="New Arrival" label-for="is_new_arrival">
                 <ValidationProvider
                   name="is_new_arrival"
@@ -463,7 +575,7 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="3">
+            <b-col md="3" lg="3" xs="12">
               <b-form-group label="Hot Deal" label-for="is_hot_deal">
                 <ValidationProvider
                   name="is_hot_deal"
@@ -481,7 +593,7 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="3">
+            <b-col md="3" lg="3" xs="12">
               <b-form-group label="For You" label-for="is_for_you">
                 <ValidationProvider
                   name="is_for_you"
@@ -501,7 +613,7 @@
             </b-col>
 
             <!-- submit and reset -->
-            <b-col cols="12">
+            <b-col md="12" lg="12" xs="12">
               <b-button
                 v-ripple.400="'rgba(255, 255, 255, 0.15)'"
                 type="submit"
@@ -548,6 +660,7 @@ import {
 } from 'bootstrap-vue'
 import { ValidationObserver, ValidationProvider } from 'vee-validate'
 import { VueGoodTable } from 'vue-good-table'
+import { quillEditor } from 'vue-quill-editor'
 import Ripple from 'vue-ripple-directive'
 import { mapGetters } from 'vuex'
 export default {
@@ -574,12 +687,23 @@ export default {
     BInputGroup,
     BFormFile,
     BFormTextarea,
+    quillEditor,
   },
   directives: {
     Ripple,
   },
   data() {
     return {
+      editorOption: {
+        modules: {
+          toolbar: '#toolbar',
+        },
+      },
+      editorOption2: {
+        modules: {
+          toolbar: '#toolbar2',
+        },
+      },
       PRODUCTS_SHOW,
       PRODUCTS_CREATE,
       PRODUCTS_EDIT,
@@ -594,6 +718,7 @@ export default {
       offerNotice: '',
       image: null,
       status: true,
+      selectLabels: [],
       statusValueOption: [
         {
           name: 'Active',
@@ -608,7 +733,7 @@ export default {
       categoryId: '',
       skuCode: '',
       quantity: '',
-      price: '',
+
       regularPrice: '',
       salePrice: '',
       isFlashSale: true,
@@ -629,7 +754,7 @@ export default {
         },
         {
           label: 'Price',
-          field: 'price',
+          field: 'price_format',
           sortable: false,
         },
         {
@@ -749,7 +874,7 @@ export default {
       this.categoryId = ''
       this.skuCode = ''
       this.quantity = ''
-      this.price = ''
+
       this.regularPrice = ''
       this.salePrice = ''
       this.isFlashSale = true
@@ -772,7 +897,7 @@ export default {
       this.categoryId = value?.category_id
       this.skuCode = value?.sku_code
       this.quantity = value?.quantity
-      this.price = value?.price
+
       this.regularPrice = value?.regular_price
       this.salePrice = value?.sale_price
       this.isFlashSale = value?.is_flash_sale ? true : false
@@ -913,14 +1038,17 @@ export default {
             }
             formData.append('quantity', this.quantity)
 
-            if (this.price) {
-              formData.append('price', this.price)
-            }
             if (this.regularPrice) {
               formData.append('regular_price', this.regularPrice)
             }
             if (this.salePrice) {
               formData.append('sale_price', this.salePrice)
+            }
+
+            if (this.selectLabels) {
+              this.selectLabels.forEach(function (element) {
+                formData.append('labels[]', element)
+              })
             }
 
             if (this.isFlashSale) {
@@ -962,7 +1090,7 @@ export default {
                   title: 'Success',
                   icon: 'BellIcon',
                   variant: 'success',
-                  text: 'Category Successfully Updated',
+                  text: 'Product Successfully Updated',
                 },
               })
             } else {
@@ -982,7 +1110,7 @@ export default {
                   title: 'Success',
                   icon: 'BellIcon',
                   variant: 'success',
-                  text: 'Category Successfully Created',
+                  text: 'Product Successfully Created',
                 },
               })
             }
@@ -1012,6 +1140,7 @@ export default {
 
 <style lang="scss">
 @import '@core/scss/vue/libs/vue-good-table.scss';
+@import '@core/scss/vue/libs/quill.scss';
 #preview {
   max-width: 100%;
   max-height: 300px;
@@ -1019,5 +1148,16 @@ export default {
 .image-container {
   max-width: 100%; /* Ensures images don't exceed the width of their container */
   max-height: 100%; /* Optional: Limits the height if needed */
+}
+.table-custom-style {
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  min-height: 140px !important;
+  tr,
+  th,
+  td {
+    vertical-align: middle !important;
+    text-align: center !important;
+  }
 }
 </style>
