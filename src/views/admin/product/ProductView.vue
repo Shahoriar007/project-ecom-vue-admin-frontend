@@ -25,9 +25,7 @@
           </template>
         </div>
       </div>
-
       <!-- table -->
-
       <vue-good-table
         mode="remote"
         style-class="vgt-table table-custom-style bordered condensed"
@@ -64,11 +62,30 @@
           </span>
 
           <!-- Column: Status -->
-          <span v-if="props.column.field === 'status'">
+          <span v-if="props.column.field === 'format_status'">
             <b-badge :variant="formatStatus(props.row.status)">
               {{ props.row.status ? 'Active' : 'Inactive' }}
             </b-badge>
           </span>
+
+          <template v-if="props?.column?.field === 'format_description'">
+            <b-button
+              v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+              variant="outline-primary"
+              v-on:click="showDescriptionModal(props.row)"
+              class="btn-sm"
+            >
+              <feather-icon icon="InfoIcon" />
+            </b-button>
+          </template>
+          <template v-if="props?.column?.field === 'format_price'">
+            <div>
+              <span><b>Regular Price:</b> {{ props.row?.regular_price }}</span>
+            </div>
+            <div>
+              <span><b>Sale Price:</b> {{ props.row?.sale_price }}</span>
+            </div>
+          </template>
 
           <!-- Column: Action -->
           <span v-else-if="props.column.field === 'action'">
@@ -165,14 +182,23 @@
           <b-row>
             <b-col
               cols="12"
-              v-if="modalType == 'editModal' && previewImageArray.length > 0"
+              v-if="
+                modalType == 'editModal' &&
+                previewImageArray.length > 0 &&
+                !removeUploadImage
+              "
               class="mb-1"
             >
               <h5>Uploaded Images</h5>
-              <div
-                class="d-flex justify-content-center"
-                style="overflow-x: auto"
+              <b-button
+                v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+                variant="danger"
+                class="mr-1 mb-1"
+                @click="removeUploadedImage"
               >
+                Remove All
+              </b-button>
+              <div class="d-flex" style="overflow-x: auto">
                 <div
                   v-for="(image, index) in previewImageArray"
                   :key="index"
@@ -205,15 +231,15 @@
               </div>
             </b-col>
             <b-col md="12" lg="12" xs="12">
-              <b-form-group label="Image" label-for="image">
+              <b-form-group label="Image" label-for="images">
                 <validation-provider
                   #default="{ errors }"
-                  name="image"
-                  vid="image"
+                  name="images"
+                  vid="images"
                 >
                   <div class="d-flex">
                     <b-form-file
-                      id="image"
+                      id="images"
                       v-model="image"
                       :state="errors.length > 0 ? false : null"
                       placeholder="Choose an image or drop it here..."
@@ -281,14 +307,6 @@
                   v-slot="{ errors }"
                   vid="description"
                 >
-                  <!-- <b-form-textarea
-                    id="remarks"
-                    type="text"
-                    v-model="description"
-                    :state="errors.length > 0 ? false : null"
-                    placeholder="Product Description"
-                  /> -->
-
                   <quill-editor
                     v-model="description"
                     :options="editorOption"
@@ -351,14 +369,6 @@
                   v-slot="{ errors }"
                   vid="offer_notice"
                 >
-                  <!-- <b-form-textarea
-                    id="offer_notice"
-                    type="text"
-                    v-model="offerNotice"
-                    :state="errors.length > 0 ? false : null"
-                    placeholder="Product Offer Notice"
-                  /> -->
-
                   <!-- Second Quill Editor -->
                   <quill-editor
                     v-model="offerNotice"
@@ -478,17 +488,18 @@
             <b-col md="4" lg="4" xs="12">
               <b-form-group label="Regular Price " label-for="regular_price">
                 <ValidationProvider
-                  name="regularPrice"
+                  name="regular_price"
                   v-slot="{ errors }"
-                  vid="regularPrice"
+                  vid="regular_price"
                 >
                   <b-form-input
-                    id="regularPrice"
+                    id="regular_price"
                     type="number"
                     v-model="regularPrice"
                     :state="errors.length > 0 ? false : null"
                     name="regularPrice"
                     placeholder="Product Regular Price"
+                    @wheel.prevent
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
@@ -528,7 +539,7 @@
                     class="custom-font"
                     placeholder="Add Label"
                     v-model="selectLabels"
-                    label="name"
+                    :options="labelOptions"
                     multiple
                     taggable
                     push-tags
@@ -620,12 +631,28 @@
                 variant="primary"
                 class="mr-1"
               >
-                Submit
+                {{ modalType == 'editModal' ? 'Update' : 'Create' }}
               </b-button>
             </b-col>
           </b-row>
         </b-form>
       </validation-observer>
+    </b-modal>
+    <b-modal
+      id="description-modal"
+      centered
+      title="Description"
+      hide-footer
+      @hidden="hiddenDescriptionModal"
+      no-close-on-backdrop
+      size="lg"
+    >
+      <b-card-text>
+        <h6>Product Description</h6>
+        <div v-html="description"></div>
+        <h6>Offer Notice</h6>
+        <div v-html="offerNotice"></div>
+      </b-card-text>
     </b-modal>
   </b-card>
 </template>
@@ -708,10 +735,12 @@ export default {
       PRODUCTS_CREATE,
       PRODUCTS_EDIT,
       PRODUCTS_DELETE,
+      removeUploadImage: false,
       imageArray: [],
       previewImageArray: [],
       modalType: '',
       previewImage: 'https://placehold.co/200x200?text=Upload+Image',
+      imageExists: false,
       id: '',
       name: '',
       description: '',
@@ -719,6 +748,7 @@ export default {
       image: null,
       status: true,
       selectLabels: [],
+      labelOptions: [],
       statusValueOption: [
         {
           name: 'Active',
@@ -733,7 +763,6 @@ export default {
       categoryId: '',
       skuCode: '',
       quantity: '',
-
       regularPrice: '',
       salePrice: '',
       isFlashSale: true,
@@ -749,12 +778,12 @@ export default {
         },
         {
           label: 'Description',
-          field: 'description',
+          field: 'format_description',
           sortable: false,
         },
         {
           label: 'Price',
-          field: 'price_format',
+          field: 'format_price',
           sortable: false,
         },
         {
@@ -764,7 +793,7 @@ export default {
         },
         {
           label: 'Status',
-          field: 'status',
+          field: 'format_status',
           sortable: false,
         },
         {
@@ -804,7 +833,10 @@ export default {
   },
 
   async created() {
-    const categories = await this.getActiveCategories()
+    const [categories, labels] = await Promise.all([
+      this.getActiveCategories(),
+      this.getAllLabels(),
+    ])
 
     this.categoryOptions = (categories?.data?.data || []).map((item) => {
       let name = item.name
@@ -814,9 +846,31 @@ export default {
         id: item.id,
       }
     })
+
+    this.labelOptions = (labels?.data?.data || []).map((item) => {
+      return item.name
+    })
   },
 
   methods: {
+    showDescriptionModal(row) {
+      if (row?.description) {
+        this.description = row?.description
+      } else {
+        this.description = '<p>N/A</p>'
+      }
+
+      if (row?.offer_notice) {
+        this.offerNotice = row?.offer_notice
+      } else {
+        this.offerNotice = '<p>N/A</p>'
+      }
+
+      this.$bvModal.show('description-modal')
+    },
+    hiddenDescriptionModal() {
+      this.$bvModal.hide('description-modal')
+    },
     formatStatus(status) {
       if (status) {
         return 'light-success'
@@ -827,6 +881,9 @@ export default {
       if (value) {
         return this.$moment(value).format('MMM Do YYYY, h:mm a')
       }
+    },
+    removeUploadedImage() {
+      this.removeUploadImage = true
     },
     removeImage() {
       if (this.imageArray.length > 0) {
@@ -855,6 +912,10 @@ export default {
     async getActiveCategories() {
       return await this.$api.get('api/categories/active-all')
     },
+
+    async getAllLabels() {
+      return await this.$api.get('api/labels/all')
+    },
     showModal() {
       this.$bvModal.show('modal-product-form')
     },
@@ -874,13 +935,15 @@ export default {
       this.categoryId = ''
       this.skuCode = ''
       this.quantity = ''
-
       this.regularPrice = ''
       this.salePrice = ''
       this.isFlashSale = true
       this.isNewArrival = true
       this.isHotDeal = true
       this.isForYou = true
+      this.selectLabels = []
+      this.labelOptions = []
+      this.removeUploadImage = false
     },
     async onShow(value) {
       this.modalType = 'editModal'
@@ -893,17 +956,25 @@ export default {
           preview: item?.original_url,
         }
       })
+
+      if (this.previewImageArray.length > 0) {
+        this.imageExists = true
+      } else {
+        this.imageExists = false
+      }
       this.status = value?.status ? true : false
       this.categoryId = value?.category_id
       this.skuCode = value?.sku_code
       this.quantity = value?.quantity
-
       this.regularPrice = value?.regular_price
       this.salePrice = value?.sale_price
       this.isFlashSale = value?.is_flash_sale ? true : false
       this.isNewArrival = value?.is_new_arrival ? true : false
       this.isHotDeal = value?.is_hot_deal ? true : false
       this.isForYou = value?.is_for_you ? true : false
+      this.selectLabels = value?.labels?.map((item) => {
+        return item?.name
+      })
 
       this.showModal()
     },
@@ -992,6 +1063,7 @@ export default {
             q: this.searchTerm,
           }),
         ])
+        console.log('🚀 ~ loadItems ~ products:', products)
 
         const data = products?.data?.data
         const meta = products?.data?.meta
@@ -1075,6 +1147,16 @@ export default {
               formData.append(`images[]`, image.file)
             })
             if (this.modalType == 'editModal') {
+              if (this.imageExists) {
+                formData.append('image_exists', 1)
+              } else {
+                formData.append('image_exists', 0)
+              }
+              if (this.removeUploadImage) {
+                formData.append('remove_all_image', 1)
+              } else {
+                formData.append('remove_all_image', 0)
+              }
               formData.append('_method', 'PUT')
               await this.$api.post(`/api/products/${this.id}`, formData, {
                 headers: {
@@ -1163,5 +1245,15 @@ export default {
 
 .custom-font {
   font-size: 13px !important;
+}
+.overlay {
+  position: absolute;
+  /* left: 0; */
+  bottom: 1;
+  width: 97%;
+  height: 79%;
+  background-color: rgb(255 255 255 / 50%);
+  /* pointer-events: auto; */
+  z-index: 2;
 }
 </style>
