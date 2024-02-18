@@ -25,11 +25,11 @@
           </template>
         </div>
       </div>
-
       <!-- table -->
       <vue-good-table
-        :line-numbers="true"
         mode="remote"
+        style-class="vgt-table table-custom-style bordered condensed"
+        :line-numbers="true"
         @on-page-change="onPageChange"
         @on-sort-change="onSortChange"
         @on-column-filter="onColumnFilter"
@@ -56,17 +56,37 @@
           <!-- Column: head -->
           <span v-if="props.column.field === 'name'">
             <b-avatar
-              :src="props?.row?.product_image_urls[0]?.original_url"
+              v-if="props?.row?.large_pictures"
+              :src="props?.row?.large_pictures[0]?.original_url"
               class="mr-1"
             />
           </span>
 
           <!-- Column: Status -->
-          <span v-if="props.column.field === 'status'">
+          <span v-if="props.column.field === 'format_status'">
             <b-badge :variant="formatStatus(props.row.status)">
               {{ props.row.status ? 'Active' : 'Inactive' }}
             </b-badge>
           </span>
+
+          <template v-if="props?.column?.field === 'format_description'">
+            <b-button
+              v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+              variant="outline-primary"
+              v-on:click="showDescriptionModal(props.row)"
+              class="btn-sm"
+            >
+              <feather-icon icon="InfoIcon" />
+            </b-button>
+          </template>
+          <template v-if="props?.column?.field === 'format_price'">
+            <div>
+              <span><b>Regular Price:</b> {{ props.row?.price }}</span>
+            </div>
+            <div>
+              <span><b>Sale Price:</b> {{ props.row?.sale_price }}</span>
+            </div>
+          </template>
 
           <!-- Column: Action -->
           <span v-else-if="props.column.field === 'action'">
@@ -156,21 +176,30 @@
       hide-footer
       @hidden="hiddenModal"
       no-close-on-backdrop
-      size="lg"
+      size="xl"
     >
       <validation-observer ref="validationRef">
         <b-form v-on:submit.prevent="validationForm">
           <b-row>
             <b-col
               cols="12"
-              v-if="modalType == 'editModal' && previewImageArray.length > 0"
+              v-if="
+                modalType == 'editModal' &&
+                previewImageArray.length > 0 &&
+                !removeUploadImage
+              "
               class="mb-1"
             >
               <h5>Uploaded Images</h5>
-              <div
-                class="d-flex justify-content-center"
-                style="overflow-x: auto"
+              <b-button
+                v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+                variant="danger"
+                class="mr-1 mb-1"
+                @click="removeUploadedImage"
               >
+                Remove All
+              </b-button>
+              <div class="d-flex" style="overflow-x: auto">
                 <div
                   v-for="(image, index) in previewImageArray"
                   :key="index"
@@ -202,16 +231,16 @@
                 <img :src="previewImage" alt="Preview" />
               </div>
             </b-col>
-            <b-col cols="12">
-              <b-form-group label="Image" label-for="image">
+            <b-col md="12" lg="12" xs="12">
+              <b-form-group label="Image" label-for="images">
                 <validation-provider
                   #default="{ errors }"
-                  name="image"
-                  vid="image"
+                  name="images"
+                  vid="images"
                 >
                   <div class="d-flex">
                     <b-form-file
-                      id="image"
+                      id="images"
                       v-model="image"
                       :state="errors.length > 0 ? false : null"
                       placeholder="Choose an image or drop it here..."
@@ -235,7 +264,7 @@
               </b-form-group>
             </b-col>
 
-            <b-col cols="6">
+            <b-col md="6" lg="6" xs="12">
               <b-form-group label="Name" label-for="name">
                 <validation-provider
                   #default="{ errors }"
@@ -254,7 +283,7 @@
                 </validation-provider>
               </b-form-group>
             </b-col>
-            <b-col cols="6">
+            <b-col md="6" lg="6" xs="12">
               <b-form-group label="Status" label-for="status">
                 <ValidationProvider
                   name="status"
@@ -272,44 +301,133 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="6">
+            <b-col md="12" lg="12" xs="12">
               <b-form-group label="Description" label-for="description">
                 <ValidationProvider
                   name="description"
                   v-slot="{ errors }"
                   vid="description"
                 >
-                  <b-form-textarea
-                    id="remarks"
-                    type="text"
+                  <quill-editor
                     v-model="description"
-                    :state="errors.length > 0 ? false : null"
-                    placeholder="Product Description"
-                  />
+                    :options="editorOption"
+                    :style="{
+                      height: '13rem !important',
+                      paddingBottom: '5rem !important',
+                    }"
+                  >
+                    <div id="toolbar" slot="toolbar">
+                      <span class="ql-formats">
+                        <button class="ql-bold">Bold</button>
+                        <button class="ql-italic">Italic</button>
+                        <button class="ql-underline">Underline</button>
+                        <button class="ql-strike">Strike</button>
+                        <button class="ql-blockquote"></button>
+                        <button class="ql-list" value="ordered"></button>
+                        <button class="ql-list" value="bullet"></button>
+                        <button class="ql-script" value="sub"></button>
+                        <button class="ql-script" value="super"></button>
+                        <button class="ql-indent" value="-1"></button>
+                        <button class="ql-indent" value="+1"></button>
+                        <button class="ql-direction" value="rtl"></button>
+                        <button class="ql-align" value=""></button>
+                        <button class="ql-align" value="center"></button>
+                        <button class="ql-align" value="right"></button>
+                        <button class="ql-align" value="justify"></button>
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                        <select class="ql-size">
+                          <option value="small" />
+
+                          <option selected />
+                          <option value="large" />
+                          <option value="huge" />
+                        </select>
+
+                        <select class="ql-font"></select>
+                        <select class="ql-header">
+                          <option value="1">Heading 1</option>
+                          <option value="2">Heading 2</option>
+                          <option value="3">Heading 3</option>
+                          <option value="4">Heading 4</option>
+                          <option value="5">Heading 5</option>
+                          <option value="6">Heading 6</option>
+                          <option selected>Normal</option>
+                        </select>
+
+                        <button class="ql-link"></button>
+                      </span>
+                    </div>
+                  </quill-editor>
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="6">
+            <b-col md="12" lg="12" xs="12">
               <b-form-group label="Offer Notice" label-for="offer_notice">
                 <ValidationProvider
                   name="offer_notice"
                   v-slot="{ errors }"
                   vid="offer_notice"
                 >
-                  <b-form-textarea
-                    id="offer_notice"
-                    type="text"
+                  <!-- Second Quill Editor -->
+                  <quill-editor
                     v-model="offerNotice"
-                    :state="errors.length > 0 ? false : null"
-                    placeholder="Product Offer Notice"
-                  />
+                    :options="editorOption2"
+                    :style="{
+                      height: '13rem !important',
+                      paddingBottom: '5rem !important',
+                    }"
+                  >
+                    <div id="toolbar2" slot="toolbar">
+                      <span class="ql-formats">
+                        <button class="ql-bold">Bold</button>
+                        <button class="ql-italic">Italic</button>
+                        <button class="ql-underline">Underline</button>
+                        <button class="ql-strike">Strike</button>
+                        <button class="ql-blockquote"></button>
+                        <button class="ql-list" value="ordered"></button>
+                        <button class="ql-list" value="bullet"></button>
+                        <button class="ql-script" value="sub"></button>
+                        <button class="ql-script" value="super"></button>
+                        <button class="ql-indent" value="-1"></button>
+                        <button class="ql-indent" value="+1"></button>
+                        <button class="ql-direction" value="rtl"></button>
+                        <button class="ql-align" value=""></button>
+                        <button class="ql-align" value="center"></button>
+                        <button class="ql-align" value="right"></button>
+                        <button class="ql-align" value="justify"></button>
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                        <select class="ql-size">
+                          <option value="small" />
+
+                          <option selected />
+                          <option value="large" />
+                          <option value="huge" />
+                        </select>
+
+                        <select class="ql-font"></select>
+                        <select class="ql-header">
+                          <option value="1">Heading 1</option>
+                          <option value="2">Heading 2</option>
+                          <option value="3">Heading 3</option>
+                          <option value="4">Heading 4</option>
+                          <option value="5">Heading 5</option>
+                          <option value="6">Heading 6</option>
+                          <option selected>Normal</option>
+                        </select>
+
+                        <button class="ql-link"></button>
+                      </span>
+                    </div>
+                  </quill-editor>
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
             </b-col>
 
-            <b-col cols="4">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="Category " label-for="category_id">
                 <ValidationProvider
                   name="category_id"
@@ -317,18 +435,23 @@
                   vid="category_id"
                 >
                   <v-select
-                    id="category_id"
-                    v-model="categoryId"
-                    :options="categoryOptions"
-                    :reduce="(option) => option.id"
-                    label="name"
+                    :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
+                    id="labels"
+                    class="custom-font"
                     placeholder="Select Product Category"
-                  />
+                    v-model="categoryIds"
+                    :options="categoryOptions"
+                    label="name"
+                    multiple
+                    taggable
+                    push-tags
+                  >
+                  </v-select>
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="4">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="SKU Code " label-for="sku_code">
                 <ValidationProvider
                   name="sku_code"
@@ -347,7 +470,7 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="4">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="Quantity " label-for="quantity">
                 <ValidationProvider
                   name="quantity"
@@ -361,13 +484,14 @@
                     :state="errors.length > 0 ? false : null"
                     name="quantity"
                     placeholder="Product Quantity"
+                    @wheel.prevent
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
             </b-col>
 
-            <b-col cols="4">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="Price " label-for="price">
                 <ValidationProvider
                   name="price"
@@ -380,34 +504,15 @@
                     v-model="price"
                     :state="errors.length > 0 ? false : null"
                     name="price"
-                    placeholder="Product Price"
-                  />
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </ValidationProvider>
-              </b-form-group>
-            </b-col>
-
-            <b-col cols="4">
-              <b-form-group label="Regular Price " label-for="regular_price">
-                <ValidationProvider
-                  name="regularPrice"
-                  v-slot="{ errors }"
-                  vid="regularPrice"
-                >
-                  <b-form-input
-                    id="regularPrice"
-                    type="number"
-                    v-model="regularPrice"
-                    :state="errors.length > 0 ? false : null"
-                    name="regularPrice"
                     placeholder="Product Regular Price"
+                    @wheel.prevent
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
             </b-col>
 
-            <b-col cols="4">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="Sale Price " label-for="sale_price">
                 <ValidationProvider
                   name="sale_price"
@@ -427,16 +532,40 @@
               </b-form-group>
             </b-col>
 
-            <b-col cols="3">
-              <b-form-group label="Flash Sale" label-for="is_flash_sale">
+            <b-col md="4" lg="4" xs="12">
+              <b-form-group label="Label" label-for="labels">
                 <ValidationProvider
-                  name="is_flash_sale"
+                  name="labels"
                   v-slot="{ errors }"
-                  vid="is_flash_sale"
+                  vid="labels"
                 >
                   <v-select
-                    id="is_flash_sale"
-                    v-model="isFlashSale"
+                    :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
+                    id="labels"
+                    class="custom-font"
+                    placeholder="Add Label"
+                    v-model="selectLabels"
+                    :options="labelOptions"
+                    multiple
+                    taggable
+                    push-tags
+                  >
+                  </v-select>
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+
+            <b-col md="3" lg="3" xs="12">
+              <b-form-group label="Flash Sale" label-for="is_sale">
+                <ValidationProvider
+                  name="is_sale"
+                  v-slot="{ errors }"
+                  vid="is_sale"
+                >
+                  <v-select
+                    id="is_sale"
+                    v-model="isSale"
                     :options="statusValueOption"
                     :reduce="(option) => option.value"
                     label="name"
@@ -445,16 +574,16 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="3">
-              <b-form-group label="New Arrival" label-for="is_new_arrival">
+            <b-col md="3" lg="3" xs="12">
+              <b-form-group label="New Arrival" label-for="is_new">
                 <ValidationProvider
-                  name="is_new_arrival"
+                  name="is_new"
                   v-slot="{ errors }"
-                  vid="is_new_arrival"
+                  vid="is_new"
                 >
                   <v-select
-                    id="is_new_arrival"
-                    v-model="isNewArrival"
+                    id="is_new"
+                    v-model="isNew"
                     :options="statusValueOption"
                     :reduce="(option) => option.value"
                     label="name"
@@ -463,16 +592,16 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="3">
-              <b-form-group label="Hot Deal" label-for="is_hot_deal">
+            <b-col md="3" lg="3" xs="12">
+              <b-form-group label="Hot Deal" label-for="is_hot">
                 <ValidationProvider
-                  name="is_hot_deal"
+                  name="is_hot"
                   v-slot="{ errors }"
-                  vid="is_hot_deal"
+                  vid="is_hot"
                 >
                   <v-select
-                    id="is_hot_deal"
-                    v-model="isHotDeal"
+                    id="is_hot"
+                    v-model="isHot"
                     :options="statusValueOption"
                     :reduce="(option) => option.value"
                     label="name"
@@ -481,7 +610,7 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col cols="3">
+            <b-col md="3" lg="3" xs="12">
               <b-form-group label="For You" label-for="is_for_you">
                 <ValidationProvider
                   name="is_for_you"
@@ -501,19 +630,35 @@
             </b-col>
 
             <!-- submit and reset -->
-            <b-col cols="12">
+            <b-col md="12" lg="12" xs="12">
               <b-button
                 v-ripple.400="'rgba(255, 255, 255, 0.15)'"
                 type="submit"
                 variant="primary"
                 class="mr-1"
               >
-                Submit
+                {{ modalType == 'editModal' ? 'Update' : 'Create' }}
               </b-button>
             </b-col>
           </b-row>
         </b-form>
       </validation-observer>
+    </b-modal>
+    <b-modal
+      id="description-modal"
+      centered
+      title="Description"
+      hide-footer
+      @hidden="hiddenDescriptionModal"
+      no-close-on-backdrop
+      size="lg"
+    >
+      <b-card-text>
+        <h6>Product Description</h6>
+        <div v-html="description"></div>
+        <h6>Offer Notice</h6>
+        <div v-html="offerNotice"></div>
+      </b-card-text>
     </b-modal>
   </b-card>
 </template>
@@ -548,6 +693,7 @@ import {
 } from 'bootstrap-vue'
 import { ValidationObserver, ValidationProvider } from 'vee-validate'
 import { VueGoodTable } from 'vue-good-table'
+import { quillEditor } from 'vue-quill-editor'
 import Ripple from 'vue-ripple-directive'
 import { mapGetters } from 'vuex'
 export default {
@@ -574,26 +720,41 @@ export default {
     BInputGroup,
     BFormFile,
     BFormTextarea,
+    quillEditor,
   },
   directives: {
     Ripple,
   },
   data() {
     return {
+      editorOption: {
+        modules: {
+          toolbar: '#toolbar',
+        },
+      },
+      editorOption2: {
+        modules: {
+          toolbar: '#toolbar2',
+        },
+      },
       PRODUCTS_SHOW,
       PRODUCTS_CREATE,
       PRODUCTS_EDIT,
       PRODUCTS_DELETE,
+      removeUploadImage: false,
       imageArray: [],
       previewImageArray: [],
       modalType: '',
-      previewImage: 'https://placehold.co/200x200?text=Upload+Image',
+      previewImage: 'https://placehold.co/720x720',
+      imageExists: false,
       id: '',
       name: '',
       description: '',
       offerNotice: '',
       image: null,
       status: true,
+      selectLabels: [],
+      labelOptions: [],
       statusValueOption: [
         {
           name: 'Active',
@@ -605,15 +766,14 @@ export default {
         },
       ],
       categoryOptions: [],
-      categoryId: '',
+      categoryIds: [],
       skuCode: '',
       quantity: '',
       price: '',
-      regularPrice: '',
       salePrice: '',
-      isFlashSale: true,
-      isNewArrival: true,
-      isHotDeal: true,
+      isSale: true,
+      isNew: true,
+      isHot: true,
       isForYou: true,
 
       pageLength: 10,
@@ -624,22 +784,22 @@ export default {
         },
         {
           label: 'Description',
-          field: 'description',
+          field: 'format_description',
           sortable: false,
         },
         {
           label: 'Price',
-          field: 'price',
+          field: 'format_price',
           sortable: false,
         },
         {
           label: 'Quantity',
-          field: 'quantity',
+          field: 'stock',
           sortable: false,
         },
         {
           label: 'Status',
-          field: 'status',
+          field: 'format_status',
           sortable: false,
         },
         {
@@ -679,7 +839,10 @@ export default {
   },
 
   async created() {
-    const categories = await this.getActiveCategories()
+    const [categories, labels] = await Promise.all([
+      this.getActiveCategories(),
+      this.getAllLabels(),
+    ])
 
     this.categoryOptions = (categories?.data?.data || []).map((item) => {
       let name = item.name
@@ -689,9 +852,31 @@ export default {
         id: item.id,
       }
     })
+
+    this.labelOptions = (labels?.data?.data || []).map((item) => {
+      return item.name
+    })
   },
 
   methods: {
+    showDescriptionModal(row) {
+      if (row?.short_description) {
+        this.description = row?.short_description
+      } else {
+        this.description = '<p>N/A</p>'
+      }
+
+      if (row?.offer_notice) {
+        this.offerNotice = row?.offer_notice
+      } else {
+        this.offerNotice = '<p>N/A</p>'
+      }
+
+      this.$bvModal.show('description-modal')
+    },
+    hiddenDescriptionModal() {
+      this.$bvModal.hide('description-modal')
+    },
     formatStatus(status) {
       if (status) {
         return 'light-success'
@@ -703,12 +888,16 @@ export default {
         return this.$moment(value).format('MMM Do YYYY, h:mm a')
       }
     },
+    removeUploadedImage() {
+      this.removeUploadImage = true
+    },
     removeImage() {
       if (this.imageArray.length > 0) {
         this.imageArray.pop()
       } else {
         this.previewImage = 'https://placehold.co/200x200?text=Upload+Image'
       }
+      this.image = null
     },
     loadImage(event) {
       const fileInput = event.target
@@ -717,10 +906,24 @@ export default {
         const reader = new FileReader()
 
         reader.onload = (e) => {
-          this.imageArray.push({
-            file: fileInput.files[0],
-            preview: e.target.result,
-          })
+          const file = fileInput.files[0]
+          const image = new Image()
+          image.onload = () => {
+            const height = image.naturalHeight
+            const width = image.naturalWidth
+
+            if (height !== 720 || width !== 720) {
+              alert('Please select an image with dimensions 720x720 pixels.')
+              return
+            }
+
+            this.imageArray.push({
+              file: file,
+              preview: e.target.result,
+            })
+          }
+
+          image.src = e.target.result
         }
 
         reader.readAsDataURL(fileInput.files[0])
@@ -729,6 +932,10 @@ export default {
 
     async getActiveCategories() {
       return await this.$api.get('api/categories/active-all')
+    },
+
+    async getAllLabels() {
+      return await this.$api.get('api/labels/all')
     },
     showModal() {
       this.$bvModal.show('modal-product-form')
@@ -744,41 +951,57 @@ export default {
       this.description = ''
       this.offerNotice = ''
       this.imageArray = []
-      this.previewImage = 'https://placehold.co/200x200?text=Upload+Image'
+      this.previewImage = 'https://placehold.co/720x720'
       this.status = true
       this.categoryId = ''
       this.skuCode = ''
       this.quantity = ''
       this.price = ''
-      this.regularPrice = ''
       this.salePrice = ''
-      this.isFlashSale = true
-      this.isNewArrival = true
-      this.isHotDeal = true
+      this.isSale = true
+      this.isNew = true
+      this.isHot = true
       this.isForYou = true
+      this.selectLabels = []
+      this.labelOptions = []
+      this.removeUploadImage = false
     },
     async onShow(value) {
       this.modalType = 'editModal'
       this.id = value?.id
       this.name = value?.name
-      this.description = value?.description
+      this.description = value?.short_description
       this.offerNotice = value?.offer_notice
-      this.previewImageArray = (value?.product_image_urls || []).map((item) => {
+      this.previewImageArray = (value?.large_pictures || []).map((item) => {
         return {
           preview: item?.original_url,
         }
       })
-      this.status = value?.status ? true : false
-      this.categoryId = value?.category_id
-      this.skuCode = value?.sku_code
-      this.quantity = value?.quantity
+
+      if (this.previewImageArray.length > 0) {
+        this.imageExists = true
+      } else {
+        this.imageExists = false
+      }
+      this.status = value?.status
+      this.categoryIds = value?.category_id
+      this.skuCode = value?.sku
+      this.quantity = value?.stock
       this.price = value?.price
-      this.regularPrice = value?.regular_price
       this.salePrice = value?.sale_price
-      this.isFlashSale = value?.is_flash_sale ? true : false
-      this.isNewArrival = value?.is_new_arrival ? true : false
-      this.isHotDeal = value?.is_hot_deal ? true : false
-      this.isForYou = value?.is_for_you ? true : false
+      this.isSale = value?.is_sale
+      this.isNew = value?.is_new
+      this.isHot = value?.is_hot
+      this.isForYou = value?.is_for_you
+      this.selectLabels = value?.labels?.map((item) => {
+        return item?.name
+      })
+      this.categoryIds = value?.product_categories.map((item) => {
+        return {
+          id: item?.id,
+          name: item?.name,
+        }
+      })
 
       this.showModal()
     },
@@ -895,7 +1118,7 @@ export default {
               formData.append('name', this.name)
             }
             if (this.description) {
-              formData.append('description', this.description)
+              formData.append('short_description', this.description)
             }
             if (this.offerNotice) {
               formData.append('offer_notice', this.offerNotice)
@@ -905,38 +1128,44 @@ export default {
             } else {
               formData.append('status', 0)
             }
-            if (this.categoryId) {
-              formData.append('category_id', this.categoryId)
-            }
+
             if (this.skuCode) {
-              formData.append('sku_code', this.skuCode)
+              formData.append('sku', this.skuCode)
             }
-            formData.append('quantity', this.quantity)
+            formData.append('stock', this.quantity)
 
             if (this.price) {
               formData.append('price', this.price)
-            }
-            if (this.regularPrice) {
-              formData.append('regular_price', this.regularPrice)
             }
             if (this.salePrice) {
               formData.append('sale_price', this.salePrice)
             }
 
-            if (this.isFlashSale) {
-              formData.append('is_flash_sale', 1)
-            } else {
-              formData.append('is_flash_sale', 0)
+            if (this.categoryIds) {
+              this.categoryIds.forEach(function (element) {
+                formData.append('category_id[]', element.id)
+              })
             }
-            if (this.isNewArrival) {
-              formData.append('is_new_arrival', 1)
-            } else {
-              formData.append('is_new_arrival', 0)
+            if (this.selectLabels) {
+              this.selectLabels.forEach(function (element) {
+                formData.append('labels[]', element)
+              })
             }
-            if (this.isHotDeal) {
-              formData.append('is_hot_deal', 1)
+
+            if (this.isSale) {
+              formData.append('is_sale', 1)
             } else {
-              formData.append('is_hot_deal', 0)
+              formData.append('is_sale', 0)
+            }
+            if (this.isNew) {
+              formData.append('is_new', 1)
+            } else {
+              formData.append('is_new', 0)
+            }
+            if (this.isHot) {
+              formData.append('is_hot', 1)
+            } else {
+              formData.append('is_hot', 0)
             }
             if (this.isForYou) {
               formData.append('is_for_you', 1)
@@ -944,9 +1173,19 @@ export default {
               formData.append('is_for_you', 0)
             }
             this.imageArray.forEach((image) => {
-              formData.append(`images[]`, image.file)
+              formData.append(`large_pictures[]`, image.file)
             })
             if (this.modalType == 'editModal') {
+              if (this.imageExists) {
+                formData.append('image_exists', 1)
+              } else {
+                formData.append('image_exists', 0)
+              }
+              if (this.removeUploadImage) {
+                formData.append('remove_all_image', 1)
+              } else {
+                formData.append('remove_all_image', 0)
+              }
               formData.append('_method', 'PUT')
               await this.$api.post(`/api/products/${this.id}`, formData, {
                 headers: {
@@ -962,7 +1201,7 @@ export default {
                   title: 'Success',
                   icon: 'BellIcon',
                   variant: 'success',
-                  text: 'Category Successfully Updated',
+                  text: 'Product Successfully Updated',
                 },
               })
             } else {
@@ -982,7 +1221,7 @@ export default {
                   title: 'Success',
                   icon: 'BellIcon',
                   variant: 'success',
-                  text: 'Category Successfully Created',
+                  text: 'Product Successfully Created',
                 },
               })
             }
@@ -1012,6 +1251,7 @@ export default {
 
 <style lang="scss">
 @import '@core/scss/vue/libs/vue-good-table.scss';
+@import '@core/scss/vue/libs/quill.scss';
 #preview {
   max-width: 100%;
   max-height: 300px;
@@ -1019,5 +1259,30 @@ export default {
 .image-container {
   max-width: 100%; /* Ensures images don't exceed the width of their container */
   max-height: 100%; /* Optional: Limits the height if needed */
+}
+.table-custom-style {
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  min-height: 140px !important;
+  tr,
+  th,
+  td {
+    vertical-align: middle !important;
+    text-align: center !important;
+  }
+}
+
+.custom-font {
+  font-size: 13px !important;
+}
+.overlay {
+  position: absolute;
+  /* left: 0; */
+  bottom: 1;
+  width: 97%;
+  height: 79%;
+  background-color: rgb(255 255 255 / 50%);
+  /* pointer-events: auto; */
+  z-index: 2;
 }
 </style>
