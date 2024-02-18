@@ -56,7 +56,8 @@
           <!-- Column: head -->
           <span v-if="props.column.field === 'name'">
             <b-avatar
-              :src="props?.row?.product_image_urls[0]?.original_url"
+              v-if="props?.row?.large_pictures"
+              :src="props?.row?.large_pictures[0]?.original_url"
               class="mr-1"
             />
           </span>
@@ -80,7 +81,7 @@
           </template>
           <template v-if="props?.column?.field === 'format_price'">
             <div>
-              <span><b>Regular Price:</b> {{ props.row?.regular_price }}</span>
+              <span><b>Regular Price:</b> {{ props.row?.price }}</span>
             </div>
             <div>
               <span><b>Sale Price:</b> {{ props.row?.sale_price }}</span>
@@ -175,7 +176,7 @@
       hide-footer
       @hidden="hiddenModal"
       no-close-on-backdrop
-      size="lg"
+      size="xl"
     >
       <validation-observer ref="validationRef">
         <b-form v-on:submit.prevent="validationForm">
@@ -434,13 +435,18 @@
                   vid="category_id"
                 >
                   <v-select
-                    id="category_id"
-                    v-model="categoryId"
-                    :options="categoryOptions"
-                    :reduce="(option) => option.id"
-                    label="name"
+                    :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
+                    id="labels"
+                    class="custom-font"
                     placeholder="Select Product Category"
-                  />
+                    v-model="categoryIds"
+                    :options="categoryOptions"
+                    label="name"
+                    multiple
+                    taggable
+                    push-tags
+                  >
+                  </v-select>
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
@@ -486,18 +492,18 @@
             </b-col>
 
             <b-col md="4" lg="4" xs="12">
-              <b-form-group label="Regular Price " label-for="regular_price">
+              <b-form-group label="Price " label-for="price">
                 <ValidationProvider
-                  name="regular_price"
+                  name="price"
                   v-slot="{ errors }"
-                  vid="regular_price"
+                  vid="price"
                 >
                   <b-form-input
-                    id="regular_price"
+                    id="price"
                     type="number"
-                    v-model="regularPrice"
+                    v-model="price"
                     :state="errors.length > 0 ? false : null"
-                    name="regularPrice"
+                    name="price"
                     placeholder="Product Regular Price"
                     @wheel.prevent
                   />
@@ -551,15 +557,15 @@
             </b-col>
 
             <b-col md="3" lg="3" xs="12">
-              <b-form-group label="Flash Sale" label-for="is_flash_sale">
+              <b-form-group label="Flash Sale" label-for="is_sale">
                 <ValidationProvider
-                  name="is_flash_sale"
+                  name="is_sale"
                   v-slot="{ errors }"
-                  vid="is_flash_sale"
+                  vid="is_sale"
                 >
                   <v-select
-                    id="is_flash_sale"
-                    v-model="isFlashSale"
+                    id="is_sale"
+                    v-model="isSale"
                     :options="statusValueOption"
                     :reduce="(option) => option.value"
                     label="name"
@@ -569,15 +575,15 @@
               </b-form-group>
             </b-col>
             <b-col md="3" lg="3" xs="12">
-              <b-form-group label="New Arrival" label-for="is_new_arrival">
+              <b-form-group label="New Arrival" label-for="is_new">
                 <ValidationProvider
-                  name="is_new_arrival"
+                  name="is_new"
                   v-slot="{ errors }"
-                  vid="is_new_arrival"
+                  vid="is_new"
                 >
                   <v-select
-                    id="is_new_arrival"
-                    v-model="isNewArrival"
+                    id="is_new"
+                    v-model="isNew"
                     :options="statusValueOption"
                     :reduce="(option) => option.value"
                     label="name"
@@ -587,15 +593,15 @@
               </b-form-group>
             </b-col>
             <b-col md="3" lg="3" xs="12">
-              <b-form-group label="Hot Deal" label-for="is_hot_deal">
+              <b-form-group label="Hot Deal" label-for="is_hot">
                 <ValidationProvider
-                  name="is_hot_deal"
+                  name="is_hot"
                   v-slot="{ errors }"
-                  vid="is_hot_deal"
+                  vid="is_hot"
                 >
                   <v-select
-                    id="is_hot_deal"
-                    v-model="isHotDeal"
+                    id="is_hot"
+                    v-model="isHot"
                     :options="statusValueOption"
                     :reduce="(option) => option.value"
                     label="name"
@@ -739,7 +745,7 @@ export default {
       imageArray: [],
       previewImageArray: [],
       modalType: '',
-      previewImage: 'https://placehold.co/200x200?text=Upload+Image',
+      previewImage: 'https://placehold.co/720x720',
       imageExists: false,
       id: '',
       name: '',
@@ -760,14 +766,14 @@ export default {
         },
       ],
       categoryOptions: [],
-      categoryId: '',
+      categoryIds: [],
       skuCode: '',
       quantity: '',
-      regularPrice: '',
+      price: '',
       salePrice: '',
-      isFlashSale: true,
-      isNewArrival: true,
-      isHotDeal: true,
+      isSale: true,
+      isNew: true,
+      isHot: true,
       isForYou: true,
 
       pageLength: 10,
@@ -788,7 +794,7 @@ export default {
         },
         {
           label: 'Quantity',
-          field: 'quantity',
+          field: 'stock',
           sortable: false,
         },
         {
@@ -854,8 +860,8 @@ export default {
 
   methods: {
     showDescriptionModal(row) {
-      if (row?.description) {
-        this.description = row?.description
+      if (row?.short_description) {
+        this.description = row?.short_description
       } else {
         this.description = '<p>N/A</p>'
       }
@@ -891,6 +897,7 @@ export default {
       } else {
         this.previewImage = 'https://placehold.co/200x200?text=Upload+Image'
       }
+      this.image = null
     },
     loadImage(event) {
       const fileInput = event.target
@@ -899,10 +906,24 @@ export default {
         const reader = new FileReader()
 
         reader.onload = (e) => {
-          this.imageArray.push({
-            file: fileInput.files[0],
-            preview: e.target.result,
-          })
+          const file = fileInput.files[0]
+          const image = new Image()
+          image.onload = () => {
+            const height = image.naturalHeight
+            const width = image.naturalWidth
+
+            if (height !== 720 || width !== 720) {
+              alert('Please select an image with dimensions 720x720 pixels.')
+              return
+            }
+
+            this.imageArray.push({
+              file: file,
+              preview: e.target.result,
+            })
+          }
+
+          image.src = e.target.result
         }
 
         reader.readAsDataURL(fileInput.files[0])
@@ -930,16 +951,16 @@ export default {
       this.description = ''
       this.offerNotice = ''
       this.imageArray = []
-      this.previewImage = 'https://placehold.co/200x200?text=Upload+Image'
+      this.previewImage = 'https://placehold.co/720x720'
       this.status = true
       this.categoryId = ''
       this.skuCode = ''
       this.quantity = ''
-      this.regularPrice = ''
+      this.price = ''
       this.salePrice = ''
-      this.isFlashSale = true
-      this.isNewArrival = true
-      this.isHotDeal = true
+      this.isSale = true
+      this.isNew = true
+      this.isHot = true
       this.isForYou = true
       this.selectLabels = []
       this.labelOptions = []
@@ -949,9 +970,9 @@ export default {
       this.modalType = 'editModal'
       this.id = value?.id
       this.name = value?.name
-      this.description = value?.description
+      this.description = value?.short_description
       this.offerNotice = value?.offer_notice
-      this.previewImageArray = (value?.product_image_urls || []).map((item) => {
+      this.previewImageArray = (value?.large_pictures || []).map((item) => {
         return {
           preview: item?.original_url,
         }
@@ -962,18 +983,24 @@ export default {
       } else {
         this.imageExists = false
       }
-      this.status = value?.status ? true : false
-      this.categoryId = value?.category_id
-      this.skuCode = value?.sku_code
-      this.quantity = value?.quantity
-      this.regularPrice = value?.regular_price
+      this.status = value?.status
+      this.categoryIds = value?.category_id
+      this.skuCode = value?.sku
+      this.quantity = value?.stock
+      this.price = value?.price
       this.salePrice = value?.sale_price
-      this.isFlashSale = value?.is_flash_sale ? true : false
-      this.isNewArrival = value?.is_new_arrival ? true : false
-      this.isHotDeal = value?.is_hot_deal ? true : false
-      this.isForYou = value?.is_for_you ? true : false
+      this.isSale = value?.is_sale
+      this.isNew = value?.is_new
+      this.isHot = value?.is_hot
+      this.isForYou = value?.is_for_you
       this.selectLabels = value?.labels?.map((item) => {
         return item?.name
+      })
+      this.categoryIds = value?.product_categories.map((item) => {
+        return {
+          id: item?.id,
+          name: item?.name,
+        }
       })
 
       this.showModal()
@@ -1063,7 +1090,6 @@ export default {
             q: this.searchTerm,
           }),
         ])
-        console.log('🚀 ~ loadItems ~ products:', products)
 
         const data = products?.data?.data
         const meta = products?.data?.meta
@@ -1092,7 +1118,7 @@ export default {
               formData.append('name', this.name)
             }
             if (this.description) {
-              formData.append('description', this.description)
+              formData.append('short_description', this.description)
             }
             if (this.offerNotice) {
               formData.append('offer_notice', this.offerNotice)
@@ -1102,41 +1128,44 @@ export default {
             } else {
               formData.append('status', 0)
             }
-            if (this.categoryId) {
-              formData.append('category_id', this.categoryId)
-            }
-            if (this.skuCode) {
-              formData.append('sku_code', this.skuCode)
-            }
-            formData.append('quantity', this.quantity)
 
-            if (this.regularPrice) {
-              formData.append('regular_price', this.regularPrice)
+            if (this.skuCode) {
+              formData.append('sku', this.skuCode)
+            }
+            formData.append('stock', this.quantity)
+
+            if (this.price) {
+              formData.append('price', this.price)
             }
             if (this.salePrice) {
               formData.append('sale_price', this.salePrice)
             }
 
+            if (this.categoryIds) {
+              this.categoryIds.forEach(function (element) {
+                formData.append('category_id[]', element.id)
+              })
+            }
             if (this.selectLabels) {
               this.selectLabels.forEach(function (element) {
                 formData.append('labels[]', element)
               })
             }
 
-            if (this.isFlashSale) {
-              formData.append('is_flash_sale', 1)
+            if (this.isSale) {
+              formData.append('is_sale', 1)
             } else {
-              formData.append('is_flash_sale', 0)
+              formData.append('is_sale', 0)
             }
-            if (this.isNewArrival) {
-              formData.append('is_new_arrival', 1)
+            if (this.isNew) {
+              formData.append('is_new', 1)
             } else {
-              formData.append('is_new_arrival', 0)
+              formData.append('is_new', 0)
             }
-            if (this.isHotDeal) {
-              formData.append('is_hot_deal', 1)
+            if (this.isHot) {
+              formData.append('is_hot', 1)
             } else {
-              formData.append('is_hot_deal', 0)
+              formData.append('is_hot', 0)
             }
             if (this.isForYou) {
               formData.append('is_for_you', 1)
@@ -1144,7 +1173,7 @@ export default {
               formData.append('is_for_you', 0)
             }
             this.imageArray.forEach((image) => {
-              formData.append(`images[]`, image.file)
+              formData.append(`large_pictures[]`, image.file)
             })
             if (this.modalType == 'editModal') {
               if (this.imageExists) {
