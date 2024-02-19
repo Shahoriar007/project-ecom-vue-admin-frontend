@@ -55,7 +55,7 @@
         <template slot="table-row" slot-scope="props">
           <!-- Column: head -->
           <span v-if="props.column.field === 'name'">
-            <b-avatar :src="props?.row?.category_image_url" class="mr-1" />
+            <b-avatar :src="props?.row?.category_image" class="mr-1" />
           </span>
 
           <!-- Column: Status -->
@@ -218,6 +218,25 @@
               </b-form-group>
             </b-col>
             <b-col cols="12">
+              <b-form-group label="Parent Name" label-for="parent_name">
+                <validation-provider
+                  #default="{ errors }"
+                  name="parent_name"
+                  vid="parent_name"
+                >
+                  <b-form-input
+                    id="parent_name"
+                    type="text"
+                    v-model="parentName"
+                    :state="errors.length > 0 ? false : null"
+                    name="parent_name"
+                    placeholder="Parent Name"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </validation-provider>
+              </b-form-group>
+            </b-col>
+            <b-col cols="12">
               <b-form-group label="Description" label-for="description">
                 <ValidationProvider
                   name="description"
@@ -341,6 +360,7 @@ export default {
       previewImage: 'https://placehold.co/200x200?text=Upload+Image',
       id: '',
       name: '',
+      parentName: '',
       description: '',
       image: null,
       status: true,
@@ -360,6 +380,10 @@ export default {
         {
           label: 'Name',
           field: 'name',
+        },
+        {
+          label: 'Parent Name',
+          field: 'parent_name',
         },
         {
           label: 'Description',
@@ -447,6 +471,7 @@ export default {
     resetModal() {
       this.id = ''
       this.name = ''
+      this.parentName = ''
       this.description = ''
       this.previewImage = 'https://placehold.co/200x200?text=Upload+Image'
       this.image = null
@@ -456,9 +481,10 @@ export default {
       this.modalType = 'editModal'
       this.id = value?.id
       this.name = value?.name
+      this.parentName = value?.parent_name
       this.description = value?.description
-      this.previewImage = value?.category_image_url
-      this.status = value?.status ? true : false
+      this.previewImage = value?.category_image
+      this.status = value?.status
 
       this.showModal()
     },
@@ -573,6 +599,9 @@ export default {
 
             if (this.name) {
               formData.append('name', this.name)
+            }
+            if (this.parentName) {
+              formData.append('parent_name', this.parentName)
             }
             if (this.description) {
               formData.append('description', this.description)
