@@ -55,9 +55,12 @@
         <template slot="table-row" slot-scope="props">
           <!-- Column: head -->
           <span v-if="props.column.field === 'name'">
-            <b-avatar :src="props?.row?.category_image" class="mr-1" />
+            <b-avatar :src="props?.row?.sub_category_image" class="mr-1" />
           </span>
 
+          <span v-if="props.column.field === 'format_parent_category'">
+            {{ props.row.category?.name }}
+          </span>
           <!-- Column: Status -->
           <span v-if="props.column.field === 'format_status'">
             <b-badge :variant="formatStatus(props.row.status)">
@@ -157,9 +160,7 @@
       id="modal-category-form"
       centered
       :title="
-        modalType == 'editModal'
-          ? 'Edit Parent Category'
-          : 'Add Parent Category'
+        modalType == 'editModal' ? 'Edit Sub Category' : 'Add Sub Category'
       "
       hide-footer
       @hidden="hiddenModal"
@@ -240,6 +241,25 @@
                     v-model="description"
                     :state="errors.length > 0 ? false : null"
                     placeholder="Category Description"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+            <b-col cols="12">
+              <b-form-group label="Parent Category" label-for="status">
+                <ValidationProvider
+                  name="category_id"
+                  v-slot="{ errors }"
+                  vid="category_id"
+                >
+                  <v-select
+                    id="category_id"
+                    v-model="categoryId"
+                    :options="categoryOptions"
+                    :reduce="(option) => option.id"
+                    label="name"
+                    placeholder="Parent Category"
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
@@ -384,6 +404,8 @@ export default {
           value: false,
         },
       ],
+      categoryId: '',
+      categoryOptions: [],
 
       pageLength: 10,
       columns: [
@@ -394,6 +416,10 @@ export default {
         {
           label: 'Description',
           field: 'description',
+        },
+        {
+          label: 'Parent Category',
+          field: 'format_parent_category',
         },
 
         {
@@ -487,21 +513,23 @@ export default {
       this.image = null
       this.status = true
       this.isFeatured = true
+      this.categoryId = ''
     },
     async onShow(value) {
       this.modalType = 'editModal'
       this.id = value?.id
       this.name = value?.name
       this.description = value?.description
-      this.previewImage = value?.category_image
+      this.previewImage = value?.sub_category_image
       this.status = value?.status
       this.isFeatured = value?.is_featured
+      this.categoryId = value?.category_id
 
       this.showModal()
     },
     async onDelete(id) {
       try {
-        await this.$api.delete(`/api/categories/${id}`)
+        await this.$api.delete(`/api/sub-categories/${id}`)
 
         this.loadItems()
 
@@ -563,8 +591,8 @@ export default {
       this.updateParams(params)
       this.loadItems()
     },
-    async getUsers(params) {
-      return await this.$api.get('api/categories', {
+    async getSubCategories(params) {
+      return await this.$api.get('api/sub-categories', {
         params: {
           show: params.show,
           page: params.page,
@@ -574,15 +602,20 @@ export default {
       })
     },
 
+    async getActiveCategories(params) {
+      return await this.$api.get('api/categories/active-all')
+    },
+
     async loadItems() {
       try {
-        const [categories] = await Promise.all([
-          this.getUsers({
+        const [categories, activeCategories] = await Promise.all([
+          this.getSubCategories({
             show: this.serverParams.perPage,
             page: this.serverParams.page,
             sort: this.serverParams.sort,
             q: this.searchTerm,
           }),
+          this.getActiveCategories(),
         ])
 
         const data = categories?.data?.data
@@ -590,6 +623,19 @@ export default {
 
         this.totalRecords = meta?.pagination?.total
         this.rows = data
+        console.log('🚀 ~ loadItems ~    this.rows:', this.rows)
+        console.log('🚀 ~ loadItems ~ activeCategories:', activeCategories)
+
+        this.categoryOptions = (activeCategories?.data?.data || []).map(
+          (item) => {
+            let name = item.name
+
+            return {
+              name,
+              id: item.id,
+            }
+          }
+        )
       } catch (error) {
         this.$toast({
           component: ToastificationContent,
@@ -610,6 +656,10 @@ export default {
 
             if (this.name) {
               formData.append('name', this.name)
+            }
+
+            if (this.categoryId) {
+              formData.append('category_id', this.categoryId)
             }
 
             if (this.description) {
@@ -640,7 +690,7 @@ export default {
                 formData.append('image_exists', 1)
               }
               formData.append('_method', 'PUT')
-              await this.$api.post(`/api/categories/${this.id}`, formData, {
+              await this.$api.post(`/api/sub-categories/${this.id}`, formData, {
                 headers: {
                   'Content-Type': 'multipart/form-data',
                 },
@@ -658,7 +708,7 @@ export default {
                 },
               })
             } else {
-              await this.$api.post('/api/categories', formData, {
+              await this.$api.post('/api/sub-categories', formData, {
                 headers: {
                   'Content-Type': 'multipart/form-data',
                 },

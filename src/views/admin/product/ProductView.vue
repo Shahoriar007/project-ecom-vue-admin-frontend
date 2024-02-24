@@ -232,15 +232,15 @@
               </div>
             </b-col>
             <b-col md="12" lg="12" xs="12">
-              <b-form-group label="Image" label-for="images">
+              <b-form-group label="Image" label-for="large_pictures">
                 <validation-provider
                   #default="{ errors }"
-                  name="images"
-                  vid="images"
+                  name="large_pictures"
+                  vid="large_pictures"
                 >
                   <div class="d-flex">
                     <b-form-file
-                      id="images"
+                      id="large_pictures"
                       v-model="image"
                       :state="errors.length > 0 ? false : null"
                       placeholder="Choose an image or drop it here..."
@@ -302,11 +302,11 @@
               </b-form-group>
             </b-col>
             <b-col md="12" lg="12" xs="12">
-              <b-form-group label="Description" label-for="description">
+              <b-form-group label="Short Description" label-for="description">
                 <ValidationProvider
-                  name="description"
+                  name="short_description"
                   v-slot="{ errors }"
-                  vid="description"
+                  vid="short_description"
                 >
                   <quill-editor
                     v-model="description"
@@ -426,7 +426,6 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-
             <b-col md="4" lg="4" xs="12">
               <b-form-group label="Category " label-for="category_id">
                 <ValidationProvider
@@ -435,35 +434,69 @@
                   vid="category_id"
                 >
                   <v-select
-                    :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
-                    id="labels"
-                    class="custom-font"
-                    placeholder="Select Product Category"
-                    v-model="categoryIds"
+                    id="category_id"
+                    v-model="categoryId"
                     :options="categoryOptions"
+                    :reduce="(option) => option.id"
                     label="name"
-                    multiple
-                    taggable
-                    push-tags
-                  >
-                  </v-select>
+                    placeholder="Choose Category"
+                    @input="filterSubCategories"
+                  />
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
             </b-col>
             <b-col md="4" lg="4" xs="12">
-              <b-form-group label="SKU Code " label-for="sku_code">
+              <b-form-group label="Sub Category " label-for="sub_category_id">
                 <ValidationProvider
-                  name="sku_code"
+                  name="sub_category_id"
                   v-slot="{ errors }"
-                  vid="sku_code"
+                  vid="sub_category_id"
                 >
+                  <v-select
+                    id="sub_category_id"
+                    v-model="subCategoryId"
+                    :options="filteredSubCategoryOptions"
+                    :reduce="(option) => option.id"
+                    label="name"
+                    placeholder="Choose Sub Category"
+                    @input="filterChildCategories"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+            <b-col md="4" lg="4" xs="12">
+              <b-form-group
+                label="Child Category "
+                label-for="child_category_id"
+              >
+                <ValidationProvider
+                  name="child_category_id"
+                  v-slot="{ errors }"
+                  vid="child_category_id"
+                >
+                  <v-select
+                    id="child_category_id"
+                    v-model="childCategoryId"
+                    :options="filteredChildCategoryOptions"
+                    :reduce="(option) => option.id"
+                    label="name"
+                    placeholder="Choose Child Category"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+            <b-col md="4" lg="4" xs="12">
+              <b-form-group label="SKU " label-for="sku_code">
+                <ValidationProvider name="sku" v-slot="{ errors }" vid="sku">
                   <b-form-input
-                    id="sku_code"
+                    id="sku"
                     type="text"
                     v-model="skuCode"
                     :state="errors.length > 0 ? false : null"
-                    name="sku_code"
+                    name="sku"
                     placeholder="Product SKU Code"
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
@@ -471,19 +504,19 @@
               </b-form-group>
             </b-col>
             <b-col md="4" lg="4" xs="12">
-              <b-form-group label="Quantity " label-for="quantity">
+              <b-form-group label="Stock " label-for="stock">
                 <ValidationProvider
-                  name="quantity"
+                  name="stock"
                   v-slot="{ errors }"
-                  vid="quantity"
+                  vid="stock"
                 >
                   <b-form-input
-                    id="quantity"
+                    id="stock"
                     type="number"
                     v-model="quantity"
                     :state="errors.length > 0 ? false : null"
-                    name="quantity"
-                    placeholder="Product Quantity"
+                    name="stock"
+                    placeholder="Product Stock"
                     @wheel.prevent
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
@@ -556,7 +589,7 @@
               </b-form-group>
             </b-col>
 
-            <b-col md="3" lg="3" xs="12">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="Flash Sale" label-for="is_sale">
                 <ValidationProvider
                   name="is_sale"
@@ -574,7 +607,7 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col md="3" lg="3" xs="12">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="New Arrival" label-for="is_new">
                 <ValidationProvider
                   name="is_new"
@@ -592,7 +625,7 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col md="3" lg="3" xs="12">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="Hot Deal" label-for="is_hot">
                 <ValidationProvider
                   name="is_hot"
@@ -610,7 +643,7 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col md="3" lg="3" xs="12">
+            <b-col md="4" lg="4" xs="12">
               <b-form-group label="For You" label-for="is_for_you">
                 <ValidationProvider
                   name="is_for_you"
@@ -766,7 +799,13 @@ export default {
         },
       ],
       categoryOptions: [],
-      categoryIds: [],
+      categoryId: '',
+      filteredSubCategoryOptions: [],
+      subCategoryOptions: [],
+      subCategoryId: '',
+      filteredChildCategoryOptions: [],
+      childCategoryOptions: [],
+      childCategoryId: '',
       skuCode: '',
       quantity: '',
       price: '',
@@ -793,7 +832,7 @@ export default {
           sortable: false,
         },
         {
-          label: 'Quantity',
+          label: 'Stock',
           field: 'stock',
           sortable: false,
         },
@@ -839,10 +878,13 @@ export default {
   },
 
   async created() {
-    const [categories, labels] = await Promise.all([
-      this.getActiveCategories(),
-      this.getAllLabels(),
-    ])
+    const [categories, subCategories, childCategories, labels] =
+      await Promise.all([
+        this.getActiveCategories(),
+        this.getActiveSubCategories(),
+        this.getActiveChildCategories(),
+        this.getAllLabels(),
+      ])
 
     this.categoryOptions = (categories?.data?.data || []).map((item) => {
       let name = item.name
@@ -853,12 +895,60 @@ export default {
       }
     })
 
+    this.subCategoryOptions = (subCategories?.data?.data || []).map((item) => {
+      let name = item.name
+
+      return {
+        name,
+        id: item.id,
+        category_id: item.category_id,
+      }
+    })
+
+    this.filteredSubCategoryOptions = this.subCategoryOptions
+
+    this.childCategoryOptions = (childCategories?.data?.data || []).map(
+      (item) => {
+        let name = item.name
+
+        return {
+          name,
+          id: item.id,
+          sub_category_id: item.sub_category_id,
+        }
+      }
+    )
+    this.filteredChildCategoryOptions = this.childCategoryOptions
     this.labelOptions = (labels?.data?.data || []).map((item) => {
       return item.name
     })
   },
 
   methods: {
+    filterChildCategories() {
+      // childCategoryOptions
+      console.log(this.subCategoryOptions)
+      console.log(this.childCategoryOptions)
+
+      this.filteredChildCategoryOptions = this.childCategoryOptions.filter(
+        (item) => item?.sub_category_id == this.subCategoryId
+      )
+      console.log(
+        '🚀 ~ filterChildCategories ~    this.filteredSubCategoryOptions:',
+        this.filteredChildCategoryOptions
+      )
+    },
+    filterSubCategories() {
+      console.log(this.categoryOptions)
+      console.log(this.subCategoryOptions)
+      this.filteredSubCategoryOptions = this.subCategoryOptions.filter(
+        (item) => item?.category_id == this.categoryId
+      )
+      console.log(
+        '🚀 ~ filterChildCategories ~    this.filteredSubCategoryOptions:',
+        this.filteredSubCategoryOptions
+      )
+    },
     showDescriptionModal(row) {
       if (row?.short_description) {
         this.description = row?.short_description
@@ -934,6 +1024,13 @@ export default {
       return await this.$api.get('api/categories/active-all')
     },
 
+    async getActiveSubCategories() {
+      return await this.$api.get('api/sub-categories/active-all')
+    },
+    async getActiveChildCategories() {
+      return await this.$api.get('api/child-categories/active-all')
+    },
+
     async getAllLabels() {
       return await this.$api.get('api/labels/all')
     },
@@ -965,9 +1062,12 @@ export default {
       this.selectLabels = []
       this.labelOptions = []
       this.removeUploadImage = false
+      this.filteredSubCategoryOptions = []
+      this.filteredChildCategoryOptions = []
     },
     async onShow(value) {
       this.modalType = 'editModal'
+      console.log(value)
       this.id = value?.id
       this.name = value?.name
       this.description = value?.short_description
@@ -984,7 +1084,9 @@ export default {
         this.imageExists = false
       }
       this.status = value?.status
-      this.categoryIds = value?.category_id
+      this.categoryId = value?.category_id
+      this.subCategoryId = value?.sub_category_id
+      this.childCategoryId = value?.child_category_id
       this.skuCode = value?.sku
       this.quantity = value?.stock
       this.price = value?.price
@@ -996,12 +1098,12 @@ export default {
       this.selectLabels = value?.labels?.map((item) => {
         return item?.name
       })
-      this.categoryIds = value?.product_categories.map((item) => {
-        return {
-          id: item?.id,
-          name: item?.name,
-        }
-      })
+      // this.categoryIds = value?.product_categories.map((item) => {
+      //   return {
+      //     id: item?.id,
+      //     name: item?.name,
+      //   }
+      // })
 
       this.showModal()
     },
@@ -1141,11 +1243,18 @@ export default {
               formData.append('sale_price', this.salePrice)
             }
 
-            if (this.categoryIds) {
-              this.categoryIds.forEach(function (element) {
-                formData.append('category_id[]', element.id)
-              })
+            if (this.categoryId) {
+              formData.append('category_id', this.categoryId)
             }
+
+            if (this.subCategoryId) {
+              formData.append('sub_category_id', this.subCategoryId)
+            }
+
+            if (this.childCategoryId) {
+              formData.append('child_category_id', this.childCategoryId)
+            }
+
             if (this.selectLabels) {
               this.selectLabels.forEach(function (element) {
                 formData.append('labels[]', element)

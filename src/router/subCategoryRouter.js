@@ -2,17 +2,17 @@
 import { CATEGORIES_ACCESS } from "@/helpers/permissionsConstant";
 export default [
   {
-    path: "/admin/categories",
-    name: "admin-categories",
-    component: () => import("@/views/admin/category/CategoryView.vue"),
+    path: "/admin/sub-categories",
+    name: "admin-sub-categories",
+    component: () => import("@/views/admin/sub_category/SubCategoryView.vue"),
     meta: {
       gate: CATEGORIES_ACCESS,
       requiresAuth: true,
-      pageTitle: "Parent Category",
+      pageTitle: "Sub Category",
       homePatch: "/admin/dashboard",
       breadcrumb: [
         {
-          text: "Parent Categories",
+          text: "Sub Categories",
           active: true,
           to: "",
         },
