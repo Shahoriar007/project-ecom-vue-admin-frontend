@@ -7,8 +7,10 @@ import VueRouter from "vue-router";
 
 import authRouter from "./authRouter";
 import categoryRouter from "./categoryRouter";
+import childCategoryRouter from "./childCategoryRouter";
 import productRouter from "./productRouter";
 import roleRouter from "./roleRouter";
+import subCategoryRouter from "./subCategoryRouter";
 import usersRouter from "./usersRouter";
 Vue.use(VueRouter);
 
@@ -41,7 +43,9 @@ const router = new VueRouter({
     ...authRouter,
     ...roleRouter,
     ...categoryRouter,
+    ...subCategoryRouter,
     ...productRouter,
+    ...childCategoryRouter,
     {
       path: "/error-404",
       name: "error-404",
