@@ -1,140 +1,19 @@
 <template>
   <b-card>
-    <div>
-      <!-- search input -->
-      <!-- <div class="custom-search d-flex align-items-center justify-content-end">
-        <div
-          class="d-flex flex-column flex-sm-row align-items-center mb-1 justify-content-around"
-        >
-          <b-form-input
-            v-on:keyup="onSearch"
-            v-model.lazy="searchTerm"
-            placeholder="Search..."
-            type="text"
-            class="d-inline-block mr-sm-1 mb-1 mb-sm-0"
-          />
-          
-        </div>
-      </div> -->
+    <h6>Customer Name : </h6>
+    <h6>Customer Email : </h6>
+    <h6>Customer Phone : </h6>
+    <h6>Customer Address : </h6>
+    <h6>Customer Created On : </h6>
 
-      <!-- table -->
-      <vue-good-table
-        :line-numbers="true"
-        mode="remote"
-        @on-page-change="onPageChange"
-        @on-sort-change="onSortChange"
-        @on-column-filter="onColumnFilter"
-        @on-per-page-change="onPerPageChange"
-        :totalRows="totalRecords"
-        :isLoading.sync="isLoading"
-        :rows="rows"
-        :sort-options="{
-          enabled: true,
-          multipleColumns: true,
-          initialSortBy: [
-            { field: 'id', type: 'desc' },
-            { field: 'name', type: 'desc' },
-            { field: 'created_at', type: 'desc' },
-          ],
-        }"
-        :columns="columns"
-        :pagination-options="{
-          enabled: true,
-          perPage: pageLength,
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <!-- Column: head -->
-          <span v-if="props.column.field === 'name'">
-            <!-- {{ props.row. }} -->
-            name
-          </span>
+    <br>
+    <br>
 
-          <!-- Column: Status -->
-          <span v-if="props.column.field === 'status'">
-            <b-badge :variant="statusVariant(props.row.status)">
-              {{ props.row.status }}
-            </b-badge>
-          </span>
+    <h6>Total Order Count: </h6>
+    <h6>Total Purchase Amount: </h6>
+    
 
-          <!-- Column: Action -->
-          <span v-else-if="props.column.field === 'action'">
-            <span>
-              <b-dropdown
-                variant="link"
-                toggle-class="text-decoration-none"
-                no-caret
-              >
-                <template v-slot:button-content>
-                  <feather-icon
-                    icon="MoreVerticalIcon"
-                    size="16"
-                    class="text-body align-middle mr-25"
-                  />
-                </template>
-                <template>
-                  <b-dropdown-item v-on:click="onShow(props.row)">
-                    <feather-icon icon="Edit2Icon" class="mr-50" />
-                    <span>View</span>
-                  </b-dropdown-item>
-                </template>
 
-                <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">
-                  <b-dropdown-item v-on:click="onDelete(props.row.id)">
-                    <feather-icon icon="TrashIcon" class="mr-50" />
-                    <span>Delete</span>
-                  </b-dropdown-item>
-                </template> -->
-              </b-dropdown>
-            </span>
-          </span>
-
-          <!-- Column: Common -->
-          <span v-else>
-            {{ props.formattedRow[props.column.field] }}
-          </span>
-        </template>
-
-        <!-- pagination -->
-        <template slot="pagination-bottom" slot-scope="props">
-          <div class="d-flex justify-content-between flex-wrap">
-            <div class="d-flex align-items-center mb-0 mt-1">
-              <span class="text-nowrap"> Showing 1 to </span>
-              <b-form-select
-                v-model="pageLength"
-                :options="['10', '15', '20']"
-                class="mx-1"
-                @input="
-                  (value) => props.perPageChanged({ currentPerPage: value })
-                "
-              />
-              <span class="text-nowrap"> of {{ props.total }} entries </span>
-            </div>
-            <div>
-              <b-pagination
-                :value="1"
-                :total-rows="props.total"
-                :per-page="pageLength"
-                first-number
-                last-number
-                align="right"
-                prev-class="prev-item"
-                next-class="next-item"
-                class="mt-1 mb-0"
-                @input="(value) => props.pageChanged({ currentPage: value })"
-              >
-                <template #prev-text>
-                  <feather-icon icon="ChevronLeftIcon" size="18" />
-                </template>
-                <template #next-text>
-                  <feather-icon icon="ChevronRightIcon" size="18" />
-                </template>
-              </b-pagination>
-            </div>
-          </div>
-        </template>
-      </vue-good-table>
-    </div>
 
     
   </b-card>
@@ -233,46 +112,28 @@ export default {
       pageLength: 10,
       columns: [
         {
-          label: 'Company Name',
-          field: 'company_name',
+          label: 'First Name',
+          field: 'first_name',
           sortable: false,
         },
         {
-          label: 'Country Name',
-          field: 'country_name',
+          label: 'Last Name',
+          field: 'last_name',
           sortable: false,
         },
         {
-          label: 'City Name',
-          field: 'city_name',
+          label: 'Email',
+          field: 'email',
           sortable: false,
         },
         {
-          label: 'Detail Address',
-          field: 'detail_address',
-          sortable: false,
-        },
-
-        {
-          label: 'Payment Method',
-          field: 'payment_method',
-          sortable: false,
-        },
-
-        {
-          label: 'Total Price',
-          field: 'total_price',
+          label: 'Phone',
+          field: 'phone',
           sortable: false,
         },
         {
-          label: 'Delivery Charge',
-          field: 'delivery_charge',
-          sortable: false,
-        },
-        {
-          label: 'Status',
-          field: 'status',
-          sortable: false,
+          label: 'Created On',
+          field: 'created_at',
         },
         {
           label: 'Action',
@@ -436,7 +297,7 @@ export default {
       this.loadItems()
     },
     async getUsers(params) {
-      return await this.$api.get('api/orders/all', {
+      return await this.$api.get('api/customers/all', {
         params: {
           show: params.show,
           page: params.page,

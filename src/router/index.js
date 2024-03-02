@@ -12,6 +12,8 @@ import roleRouter from './roleRouter'
 import usersRouter from './usersRouter'
 import fbPixelRouter from './fbPixelRouter'
 import customerRouter from './customerRouter'
+import orderRouter from './orderRouter'
+import customerHistoryRouter from './customerHistoryRouter'
 
 Vue.use(VueRouter)
 
@@ -46,6 +48,8 @@ const router = new VueRouter({
     ...categoryRouter,
     ...productRouter,
     ...customerRouter,
+    ...orderRouter,
+    ...customerHistoryRouter,
     ...fbPixelRouter,
     {
       path: '/error-404',

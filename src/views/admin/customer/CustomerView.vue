@@ -73,9 +73,13 @@
                   />
                 </template>
                 <template>
-                  <b-dropdown-item v-on:click="onShow(props.row)">
+                  <b-dropdown-item v-on:click="onView(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
+                  </b-dropdown-item>
+                  <b-dropdown-item v-on:click="onView(props.row.id)">
+                    <feather-icon icon="TrashIcon" class="mr-50" />
+                    <span>Block Customer</span>
                   </b-dropdown-item>
                 </template>
 
@@ -233,22 +237,23 @@ export default {
       pageLength: 10,
       columns: [
         {
-          label: 'Name',
-          field: 'name',
+          label: 'First Name',
+          field: 'first_name',
+          sortable: false,
+        },
+        {
+          label: 'Last Name',
+          field: 'last_name',
+          sortable: false,
         },
         {
           label: 'Email',
           field: 'email',
-        },
-        {
-          label: 'Role',
-          field: this.roleName,
           sortable: false,
         },
-
         {
-          label: 'Status',
-          field: 'status',
+          label: 'Phone',
+          field: 'phone',
           sortable: false,
         },
         {
@@ -321,6 +326,12 @@ export default {
   },
 
   methods: {
+    onView(id) {
+      this.$router.push({
+        name: 'admin-customers-history',
+        params: { id },
+      })
+    },
     roleName(rowObj) {
       return rowObj?.roles?.data[0]?.name
     },
