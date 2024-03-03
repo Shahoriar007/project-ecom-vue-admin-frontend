@@ -7,9 +7,12 @@ import VueRouter from 'vue-router'
 
 import authRouter from './authRouter'
 import categoryRouter from './categoryRouter'
+import childCategoryRouter from './childCategoryRouter'
 import productRouter from './productRouter'
 import roleRouter from './roleRouter'
+import subCategoryRouter from './subCategoryRouter'
 import usersRouter from './usersRouter'
+
 import fbPixelRouter from './fbPixelRouter'
 import customerRouter from './customerRouter'
 import orderRouter from './orderRouter'
@@ -46,7 +49,9 @@ const router = new VueRouter({
     ...authRouter,
     ...roleRouter,
     ...categoryRouter,
+    ...subCategoryRouter,
     ...productRouter,
+    ...childCategoryRouter,
     ...customerRouter,
     ...orderRouter,
     ...customerHistoryRouter,
