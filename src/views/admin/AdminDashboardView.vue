@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-row class="match-height">
+    <!-- <b-row class="match-height">
       <b-col md="2" sm="6">
         <statistic-card-vertical
           icon="EyeIcon"
@@ -46,7 +46,7 @@
           to="/admin/designation"
         />
       </b-col>
-    </b-row>
+    </b-row> -->
   </div>
 </template>
 

@@ -233,20 +233,20 @@ export default {
       pageLength: 10,
       columns: [
         {
-          label: 'Company Name',
-          field: 'company_name',
+          label: 'Customer Name',
+          field: 'customer_name.full_name',
           sortable: false,
         },
-        {
-          label: 'Country Name',
-          field: 'country_name',
-          sortable: false,
-        },
-        {
-          label: 'City Name',
-          field: 'city_name',
-          sortable: false,
-        },
+        // {
+        //   label: 'Country Name',
+        //   field: 'country_name',
+        //   sortable: false,
+        // },
+        // {
+        //   label: 'City Name',
+        //   field: 'city_name',
+        //   sortable: false,
+        // },
         {
           label: 'Detail Address',
           field: 'detail_address',
