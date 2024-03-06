@@ -18,4 +18,23 @@ export default [
       ],
     },
   },
+
+  {
+    path: '/admin/orders/:id',
+    name: 'admin-orders-view',
+    component: () => import('@/views/admin/order/OrderDetails.vue'),
+    meta: {
+      gate: USERS_ACCESS,
+      requiresAuth: true,
+      pageTitle: 'Order Details',
+      homePatch: '/admin/dashboard',
+      breadcrumb: [
+        {
+          text: 'Users',
+          active: true,
+          to: '',
+        },
+      ],
+    },
+  },
 ]
