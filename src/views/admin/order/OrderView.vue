@@ -1,6 +1,23 @@
 <template>
   <b-card>
     <div>
+      <template>
+      <b-row>
+        <b-col md="12">
+          <!-- radio button -->
+          <b-form-group>
+            <b-form-radio-group
+              id="btn-radios-1"
+              v-model="filterStatus"
+              button-variant="outline-primary"
+              :options="optionsRadio"
+              buttons
+              name="radios-btn-default"
+            />
+          </b-form-group>
+        </b-col>
+      </b-row>
+    </template>
       <!-- search input -->
       <!-- <div class="custom-search d-flex align-items-center justify-content-end">
         <div
@@ -42,6 +59,15 @@
           enabled: true,
           perPage: pageLength,
         }"
+        :select-options="{
+          enabled: true,
+          selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
+          selectionInfoClass: 'custom-class',
+          selectionText: 'rows selected',
+          clearSelectionText: 'clear',
+          disableSelectInfo: true, // disable the select info panel on top
+          selectAllByGroup: true, // when used in combination with a grouped table, add a checkbox in the header row to check/uncheck the entire group
+        }"
       >
         <template slot="table-row" slot-scope="props">
           <!-- Column: head -->
@@ -52,7 +78,7 @@
 
           <!-- Column: Status -->
           <span v-if="props.column.field === 'status'">
-            <b-badge :variant="statusVariant(props.row.status)">
+            <b-badge variant="light-primary">
               {{ props.row.status }}
             </b-badge>
           </span>
@@ -73,7 +99,7 @@
                   />
                 </template>
                 <template>
-                  <b-dropdown-item v-on:click="onShow(props.row)">
+                  <b-dropdown-item v-on:click="onView(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
                   </b-dropdown-item>
@@ -135,8 +161,6 @@
         </template>
       </vue-good-table>
     </div>
-
-    
   </b-card>
 </template>
 
@@ -159,6 +183,7 @@ import {
   BModal,
   BPagination,
   BRow,
+  BFormRadioGroup,
 } from 'bootstrap-vue'
 import { ValidationObserver, ValidationProvider } from 'vee-validate'
 import { VueGoodTable } from 'vue-good-table'
@@ -198,6 +223,7 @@ export default {
     BModal,
     BInputGroupAppend,
     BInputGroup,
+    BFormRadioGroup,
   },
   directives: {
     Ripple,
@@ -218,6 +244,20 @@ export default {
       selectRoleId: '',
       roleIdOption: [],
 
+      filterStatus: '',
+      optionsRadio: [
+        { text: 'Pending', value: 'pending' },
+        { text: 'Processing', value: 'processing' },
+        { text: 'Packing', value: 'packing' },
+        { text: 'Shipping', value: 'shipping' },
+        { text: 'On the way', value: 'on_the_way' },
+        { text: 'In Review', value: 'in_review' },
+        { text: 'Rejected', value: 'rejected' },
+        { text: 'Returned', value: 'returned' },
+        { text: 'Canceled', value: 'canceled' },
+        { text: 'Delivered', value: 'delivered' },
+      ],
+
       selectStatusValue: true,
       statusValueOption: [
         {
@@ -233,20 +273,20 @@ export default {
       pageLength: 10,
       columns: [
         {
-          label: 'Company Name',
-          field: 'company_name',
+          label: 'Customer Name',
+          field: 'customer.full_name',
           sortable: false,
         },
-        {
-          label: 'Country Name',
-          field: 'country_name',
-          sortable: false,
-        },
-        {
-          label: 'City Name',
-          field: 'city_name',
-          sortable: false,
-        },
+        // {
+        //   label: 'Country Name',
+        //   field: 'country_name',
+        //   sortable: false,
+        // },
+        // {
+        //   label: 'City Name',
+        //   field: 'city_name',
+        //   sortable: false,
+        // },
         {
           label: 'Detail Address',
           field: 'detail_address',
@@ -339,7 +379,19 @@ export default {
     }
   },
 
+  watch: {
+    filterStatus: function (newVal, oldVal) {
+      this.loadItems()
+    },
+  },
+
   methods: {
+    onView(id) {
+      this.$router.push({
+        name: 'admin-orders-view',
+        params: { id },
+      })
+    },
     roleName(rowObj) {
       return rowObj?.roles?.data[0]?.name
     },
@@ -442,6 +494,7 @@ export default {
           page: params.page,
           sort: params.sort,
           q: params.q,
+          filterStatus: params.filterStatus,
         },
       })
     },
@@ -457,12 +510,13 @@ export default {
             page: this.serverParams.page,
             sort: this.serverParams.sort,
             q: this.searchTerm,
+            filterStatus: this.filterStatus,
           }),
         ])
 
         const data = users?.data?.data
 
-        console.log(data);
+        console.log(data)
         const meta = users?.data?.meta
 
         this.totalRecords = meta?.pagination?.total

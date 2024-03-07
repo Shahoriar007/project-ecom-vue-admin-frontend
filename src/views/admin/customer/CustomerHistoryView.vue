@@ -1,22 +1,205 @@
 <template>
-  <b-card>
-    <h6>Customer Name : </h6>
-    <h6>Customer Email : </h6>
-    <h6>Customer Phone : </h6>
-    <h6>Customer Address : </h6>
-    <h6>Customer Created On : </h6>
+  <div>
+    <b-card>
 
-    <br>
-    <br>
+      <b-row>
+        <b-col md="3" lg="3" xs="3">
+            <h5 class="text-capitalize">Customer Name</h5>
+            <template>
+              <div>
+                <b-card-text>{{ customerInfo?.full_name }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
 
-    <h6>Total Order Count: </h6>
-    <h6>Total Purchase Amount: </h6>
+
+        <b-col md="3" lg="3" xs="3">
+            <h5 class="text-capitalize">Customer Email</h5>
+            <template>
+              <div>
+                <b-card-text>{{ customerInfo?.email }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+
+          <b-col md="3" lg="3" xs="3">
+            <h5 class="text-capitalize">Customer Phone</h5>
+            <template>
+              <div>
+                <b-card-text>{{ customerInfo?.phone }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+          <b-col md="3" lg="3" xs="3">
+            <h5 class="text-capitalize">Customer Created On</h5>
+            <template>
+              <div>
+                <b-card-text>{{ this.formatFnTableLastContactDate(customerInfo?.created_at) }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+          <b-col md="3" lg="3" xs="3">
+            <h5 class="text-capitalize">Total Order Count</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalRecords }}</b-card-text>
+              </div>
+            </template>
+
+          </b-col>
+
+          <b-col md="3" lg="3" xs="3">
+            <h5 class="text-capitalize">Total Purchase Amount</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalPurchaseAmount }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+      </b-row>
     
 
+    </b-card>
+
+    <b-card>
+    
+ <!-- table -->
+ <vue-good-table
+        :line-numbers="true"
+        mode="remote"
+        @on-page-change="onPageChange"
+        @on-sort-change="onSortChange"
+        @on-column-filter="onColumnFilter"
+        @on-per-page-change="onPerPageChange"
+        :totalRows="totalRecords"
+        :isLoading.sync="isLoading"
+        :rows="rows"
+        :sort-options="{
+          enabled: true,
+          multipleColumns: true,
+          initialSortBy: [
+            { field: 'id', type: 'desc' },
+            { field: 'name', type: 'desc' },
+            { field: 'created_at', type: 'desc' },
+          ],
+        }"
+        :columns="columns"
+        :pagination-options="{
+          enabled: true,
+          perPage: pageLength,
+        }"
+        :select-options="{
+          enabled: true,
+          selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
+          selectionInfoClass: 'custom-class',
+          selectionText: 'rows selected',
+          clearSelectionText: 'clear',
+          disableSelectInfo: true, // disable the select info panel on top
+          selectAllByGroup: true, // when used in combination with a grouped table, add a checkbox in the header row to check/uncheck the entire group
+        }"
+      >
+        <template slot="table-row" slot-scope="props">
+          <!-- Column: head -->
+          <span v-if="props.column.field === 'name'">
+            <!-- {{ props.row. }} -->
+            name
+          </span>
+
+          <!-- Column: Status -->
+          <span v-if="props.column.field === 'status'">
+            <b-badge variant="light-primary">
+              {{ props.row.status }}
+            </b-badge>
+          </span>
+
+          <!-- Column: Action -->
+          <span v-else-if="props.column.field === 'action'">
+            <span>
+              <b-dropdown
+                variant="link"
+                toggle-class="text-decoration-none"
+                no-caret
+              >
+                <template v-slot:button-content>
+                  <feather-icon
+                    icon="MoreVerticalIcon"
+                    size="16"
+                    class="text-body align-middle mr-25"
+                  />
+                </template>
+                <template>
+                  <b-dropdown-item v-on:click="onView(props.row.id)">
+                    <feather-icon icon="Edit2Icon" class="mr-50" />
+                    <span>View</span>
+                  </b-dropdown-item>
+                </template>
+
+                <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">
+                  <b-dropdown-item v-on:click="onDelete(props.row.id)">
+                    <feather-icon icon="TrashIcon" class="mr-50" />
+                    <span>Delete</span>
+                  </b-dropdown-item>
+                </template> -->
+              </b-dropdown>
+            </span>
+          </span>
+
+          <!-- Column: Common -->
+          <span v-else>
+            {{ props.formattedRow[props.column.field] }}
+          </span>
+        </template>
+
+        <!-- pagination -->
+        <template slot="pagination-bottom" slot-scope="props">
+          <div class="d-flex justify-content-between flex-wrap">
+            <div class="d-flex align-items-center mb-0 mt-1">
+              <span class="text-nowrap"> Showing 1 to </span>
+              <b-form-select
+                v-model="pageLength"
+                :options="['10', '15', '20']"
+                class="mx-1"
+                @input="
+                  (value) => props.perPageChanged({ currentPerPage: value })
+                "
+              />
+              <span class="text-nowrap"> of {{ props.total }} entries </span>
+            </div>
+            <div>
+              <b-pagination
+                :value="1"
+                :total-rows="props.total"
+                :per-page="pageLength"
+                first-number
+                last-number
+                align="right"
+                prev-class="prev-item"
+                next-class="next-item"
+                class="mt-1 mb-0"
+                @input="(value) => props.pageChanged({ currentPage: value })"
+              >
+                <template #prev-text>
+                  <feather-icon icon="ChevronLeftIcon" size="18" />
+                </template>
+                <template #next-text>
+                  <feather-icon icon="ChevronRightIcon" size="18" />
+                </template>
+              </b-pagination>
+            </div>
+          </div>
+        </template>
+      </vue-good-table>
 
 
     
   </b-card>
+
+  </div>
+  
 </template>
 
 <script>
@@ -96,6 +279,8 @@ export default {
       email: '',
       selectRoleId: '',
       roleIdOption: [],
+      totalPurchaseAmount: "",
+      customerInfo: {},
 
       selectStatusValue: true,
       statusValueOption: [
@@ -111,29 +296,37 @@ export default {
 
       pageLength: 10,
       columns: [
-        {
-          label: 'First Name',
-          field: 'first_name',
+      {
+          label: 'Customer Name',
+          field: 'customer.full_name',
           sortable: false,
         },
         {
-          label: 'Last Name',
-          field: 'last_name',
+          label: 'Detail Address',
+          field: 'detail_address',
+          sortable: false,
+        },
+
+        {
+          label: 'Payment Method',
+          field: 'payment_method',
+          sortable: false,
+        },
+
+        {
+          label: 'Total Price',
+          field: 'total_price',
           sortable: false,
         },
         {
-          label: 'Email',
-          field: 'email',
+          label: 'Delivery Charge',
+          field: 'delivery_charge',
           sortable: false,
         },
         {
-          label: 'Phone',
-          field: 'phone',
+          label: 'Status',
+          field: 'status',
           sortable: false,
-        },
-        {
-          label: 'Created On',
-          field: 'created_at',
         },
         {
           label: 'Action',
@@ -162,6 +355,7 @@ export default {
   computed: {
     ...mapGetters({
       permissions: 'userModule/getPermissions',
+      authUser: "userModule/getUser",
     }),
     passwordToggleIcon() {
       return this.passwordFieldType === 'password' ? 'EyeIcon' : 'EyeOffIcon'
@@ -201,6 +395,18 @@ export default {
   },
 
   methods: {
+    formatFnTableLastContactDate(value) {
+      if (value) {
+        return this.$moment(value).format('MMM Do YYYY, h:mm a')
+      }
+    },
+
+    onView(id) {
+      this.$router.push({
+        name: 'admin-orders-view',
+        params: { id },
+      })
+    },
     roleName(rowObj) {
       return rowObj?.roles?.data[0]?.name
     },
@@ -297,12 +503,13 @@ export default {
       this.loadItems()
     },
     async getUsers(params) {
-      return await this.$api.get('api/customers/all', {
+      return await this.$api.get('api/orders/all', {
         params: {
           show: params.show,
           page: params.page,
           sort: params.sort,
           q: params.q,
+          customerId: params.customerId,
         },
       })
     },
@@ -318,16 +525,26 @@ export default {
             page: this.serverParams.page,
             sort: this.serverParams.sort,
             q: this.searchTerm,
+            customerId: this.$route.params.id,
           }),
         ])
 
-        const data = users?.data?.data
+        const data = users?.data?.data;
 
-        console.log(data);
-        const meta = users?.data?.meta
+        const meta = users?.data?.meta;
 
-        this.totalRecords = meta?.pagination?.total
-        this.rows = data
+        this.totalRecords = meta?.pagination?.total;
+
+        this.rows = data;
+
+         // i want sum of total purchase amount from data.total_price
+         this.totalPurchaseAmount = data.reduce((acc, item) => {
+          return acc + Number(item.total_price)
+        }, 0) 
+
+        this.customerInfo = data[0]?.customer;
+
+
       } catch (error) {
         this.$toast({
           component: ToastificationContent,

@@ -81,6 +81,10 @@
                     <feather-icon icon="TrashIcon" class="mr-50" />
                     <span>Block Customer</span>
                   </b-dropdown-item>
+                  <b-dropdown-item v-on:click="onView(props.row.id)">
+                    <feather-icon icon="TrashIcon" class="mr-50" />
+                    <span>Print PDF</span>
+                  </b-dropdown-item>
                 </template>
 
                 <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">
@@ -237,15 +241,15 @@ export default {
       pageLength: 10,
       columns: [
         {
-          label: 'First Name',
-          field: 'first_name',
+          label: 'Full Name',
+          field: 'full_name',
           sortable: false,
         },
-        {
-          label: 'Last Name',
-          field: 'last_name',
-          sortable: false,
-        },
+        // {
+        //   label: 'Last Name',
+        //   field: 'last_name',
+        //   sortable: false,
+        // },
         {
           label: 'Email',
           field: 'email',
@@ -259,6 +263,7 @@ export default {
         {
           label: 'Created On',
           field: 'created_at',
+          formatFn: this.formatFnTableLastContactDate,
         },
         {
           label: 'Action',
@@ -326,9 +331,14 @@ export default {
   },
 
   methods: {
+    formatFnTableLastContactDate(value) {
+      if (value) {
+        return this.$moment(value).format('MMM Do YYYY, h:mm a')
+      }
+    },
     onView(id) {
       this.$router.push({
-        name: 'admin-customers-history',
+        name: 'admin-customer-history',
         params: { id },
       })
     },
