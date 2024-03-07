@@ -338,7 +338,7 @@ export default {
     },
     onView(id) {
       this.$router.push({
-        name: 'admin-customers-history',
+        name: 'admin-customer-history',
         params: { id },
       })
     },

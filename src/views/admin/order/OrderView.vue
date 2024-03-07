@@ -379,6 +379,12 @@ export default {
     }
   },
 
+  watch: {
+    filterStatus: function (newVal, oldVal) {
+      this.loadItems()
+    },
+  },
+
   methods: {
     onView(id) {
       this.$router.push({
