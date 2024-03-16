@@ -81,10 +81,7 @@
                     <feather-icon icon="TrashIcon" class="mr-50" />
                     <span>Block Customer</span>
                   </b-dropdown-item>
-                  <b-dropdown-item v-on:click="onView(props.row.id)">
-                    <feather-icon icon="TrashIcon" class="mr-50" />
-                    <span>Print PDF</span>
-                  </b-dropdown-item>
+                  
                 </template>
 
                 <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">

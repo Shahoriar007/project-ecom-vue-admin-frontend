@@ -1,38 +1,64 @@
 <template>
   <b-card>
     <div>
-      <template>
       <b-row>
-        <b-col md="12">
-          <!-- radio button -->
+        <b-col md="10">
+          <!-- search input -->
+          <div
+            class="custom-search align-items-center "
+          >
+            <div
+              class="d-flex flex-column flex-sm-row align-items-center mb-1 justify-content-around"
+            >
+              <b-form-input
+                v-on:keyup="onSearch"
+                v-model.lazy="searchTerm"
+                placeholder="Search..."
+                type="text"
+                class="d-inline-block mr-sm-1 mb-1 mb-sm-0"
+              />
+            </div>
+          </div>
+        </b-col>
+        <b-col md="2">
           <b-form-group>
-            <b-form-radio-group
-              id="btn-radios-1"
-              v-model="filterStatus"
-              button-variant="outline-primary"
-              :options="optionsRadio"
-              buttons
-              name="radios-btn-default"
+            <flat-pickr
+              v-model="rangeDate"
+              class="form-control"
+              placeholder="Date Filter"
+              :config="{ mode: 'range' }"
             />
           </b-form-group>
         </b-col>
+        
       </b-row>
-    </template>
-      <!-- search input -->
-      <!-- <div class="custom-search d-flex align-items-center justify-content-end">
-        <div
-          class="d-flex flex-column flex-sm-row align-items-center mb-1 justify-content-around"
-        >
-          <b-form-input
-            v-on:keyup="onSearch"
-            v-model.lazy="searchTerm"
-            placeholder="Search..."
-            type="text"
-            class="d-inline-block mr-sm-1 mb-1 mb-sm-0"
-          />
-          
-        </div>
-      </div> -->
+      <!-- filter -->
+      <template>
+        <b-row>
+          <b-col md="1">
+            <div>
+              <b-badge variant="light-primary">
+                <h1>{{ statusCount }}</h1>
+              </b-badge>
+            </div>
+          </b-col>
+          <b-col md="11">
+            <!-- radio button -->
+            <div style="overflow-x: auto; white-space: nowrap; max-width: 100%">
+              <b-form-group>
+                <b-form-radio-group
+                  id="btn-radios-1"
+                  v-model="filterStatus"
+                  button-variant="outline-primary"
+                  :options="optionsRadio"
+                  buttons
+                  name="radios-btn-default"
+                />
+              </b-form-group>
+            </div>
+          </b-col>
+        </b-row>
+      </template>
 
       <!-- table -->
       <vue-good-table
@@ -102,6 +128,10 @@
                   <b-dropdown-item v-on:click="onView(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
+                  </b-dropdown-item>
+                  <b-dropdown-item v-on:click="generateInvoice(props.row.id)">
+                    <feather-icon icon="ClipboardIcon" class="mr-50" />
+                    <span>Invoice</span>
                   </b-dropdown-item>
                 </template>
 
@@ -199,10 +229,11 @@ import {
 import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
 import { mapGetters } from 'vuex'
+import flatPickr from 'vue-flatpickr-component'
 
 export default {
   mixins: [togglePasswordVisibility],
-  name: 'CustomerView',
+  name: 'OrderView',
   components: {
     BRow,
     BCol,
@@ -224,6 +255,7 @@ export default {
     BInputGroupAppend,
     BInputGroup,
     BFormRadioGroup,
+    flatPickr,
   },
   directives: {
     Ripple,
@@ -243,9 +275,12 @@ export default {
       email: '',
       selectRoleId: '',
       roleIdOption: [],
+      statusCount: '',
+      rangeDate: null,
 
       filterStatus: '',
       optionsRadio: [
+        { text: 'All', value: 'all' },
         { text: 'Pending', value: 'pending' },
         { text: 'Processing', value: 'processing' },
         { text: 'Packing', value: 'packing' },
@@ -312,6 +347,12 @@ export default {
         {
           label: 'Status',
           field: 'status',
+          sortable: false,
+        },
+        {
+          label: 'Created At',
+          field: 'created_at',
+          formatFn: this.formatFnTableLastContactDate,
           sortable: false,
         },
         {
@@ -383,9 +424,18 @@ export default {
     filterStatus: function (newVal, oldVal) {
       this.loadItems()
     },
+    rangeDate: function (newVal, oldVal) {
+      console.log(newVal, oldVal)
+      this.loadItems()
+    },
   },
 
   methods: {
+    formatFnTableLastContactDate(value) {
+      if (value) {
+        return this.$moment(value).format('MMM Do YYYY, h:mm a')
+      }
+    },
     onView(id) {
       this.$router.push({
         name: 'admin-orders-view',
@@ -412,6 +462,52 @@ export default {
       this.password = ''
       this.password_confirmation = ''
     },
+    // invoice generation
+    saveFile(file) {
+      const blob = new Blob([file], { type: 'application/pdf' })
+      const link = document.createElement('a')
+      link.href = window.URL.createObjectURL(blob)
+
+      //open report pdf in new tab
+      link.target = '_blank' // Open in a new tab
+      link.click()
+    },
+
+    async generateInvoice(id) {
+      try {
+        const response = await this.$api.get('api/print-invoice', {
+          responseType: 'blob',
+          params: {
+            orderId: id,
+          },
+        })
+
+        await this.saveFile(response.data)
+
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Success',
+            icon: 'BellIcon',
+            variant: 'success',
+            text: 'Invoice Generated',
+          },
+        })
+      } catch (error) {
+        if (error?.response?.data?.message) {
+          this.$toast({
+            component: ToastificationContent,
+            props: {
+              title: 'Error',
+              icon: 'BellIcon',
+              variant: 'danger',
+              text: error?.response?.data?.message,
+            },
+          })
+        }
+      }
+    },
+
     async onShow(value) {
       //   console.log("onShow", value);
       this.modelType = 'editModel'
@@ -495,6 +591,7 @@ export default {
           sort: params.sort,
           q: params.q,
           filterStatus: params.filterStatus,
+          rangeDate: params.rangeDate,
         },
       })
     },
@@ -511,13 +608,14 @@ export default {
             sort: this.serverParams.sort,
             q: this.searchTerm,
             filterStatus: this.filterStatus,
+            rangeDate: this.rangeDate,
           }),
         ])
 
         const data = users?.data?.data
 
-        console.log(data)
         const meta = users?.data?.meta
+        this.statusCount = meta?.pagination?.total
 
         this.totalRecords = meta?.pagination?.total
         this.rows = data
@@ -610,4 +708,5 @@ export default {
 
 <style lang="scss">
 @import '@core/scss/vue/libs/vue-good-table.scss';
+@import '@core/scss/vue/libs/vue-flatpicker.scss';
 </style>
