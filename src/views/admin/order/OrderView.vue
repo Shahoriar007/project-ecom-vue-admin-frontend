@@ -4,9 +4,7 @@
       <b-row>
         <b-col md="10">
           <!-- search input -->
-          <div
-            class="custom-search align-items-center "
-          >
+          <div class="custom-search align-items-center">
             <div
               class="d-flex flex-column flex-sm-row align-items-center mb-1 justify-content-around"
             >
@@ -30,19 +28,84 @@
             />
           </b-form-group>
         </b-col>
-        
       </b-row>
       <!-- filter -->
       <template>
         <b-row>
           <b-col md="1">
             <div>
-              <b-badge variant="light-primary">
-                <h1>{{ statusCount }}</h1>
+              <b-badge variant="light-primary" style="font-size: xx-large">
+                {{ statusCount }}
               </b-badge>
             </div>
           </b-col>
-          <b-col md="11">
+
+          <template v-if="isRowChecked">
+            <b-col md="1">
+              <b-dropdown
+                id="dropdown-1"
+                v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+                text="Action"
+                variant="primary"
+              >
+                <b-dropdown-item @click="printSelectedSticker()"
+                  >Print Sticker</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="pending"
+                  @click="changeSelectedStatus('pending')"
+                  >Mark as Pending</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="processing"
+                  @click="changeSelectedStatus('processing')"
+                  >Mark as Processing</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="packing"
+                  @click="changeSelectedStatus('packing')"
+                  >Mark as Packing</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="shipping"
+                  @click="changeSelectedStatus('shipping')"
+                  >Mark as Shipping</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="on_the_way"
+                  @click="changeSelectedStatus('on_the_way')"
+                  >Mark as On the way</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="in_review"
+                  @click="changeSelectedStatus('in_review')"
+                  >Mark as In Review</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="rejected"
+                  @click="changeSelectedStatus('rejected')"
+                  >Mark as Rejected</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="returned"
+                  @click="changeSelectedStatus('returned')"
+                  >Mark as Returned</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="canceled"
+                  @click="changeSelectedStatus('canceled')"
+                  >Mark as Canceled</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="delivered"
+                  @click="changeSelectedStatus('delivered')"
+                  >Mark as Delivered</b-dropdown-item
+                >
+              </b-dropdown>
+            </b-col>
+          </template>
+
+          <b-col md="10">
             <!-- radio button -->
             <div style="overflow-x: auto; white-space: nowrap; max-width: 100%">
               <b-form-group>
@@ -64,6 +127,7 @@
       <vue-good-table
         :line-numbers="true"
         mode="remote"
+        @on-selected-rows-change="selectionChanged"
         @on-page-change="onPageChange"
         @on-sort-change="onSortChange"
         @on-column-filter="onColumnFilter"
@@ -91,11 +155,27 @@
           selectionInfoClass: 'custom-class',
           selectionText: 'rows selected',
           clearSelectionText: 'clear',
-          disableSelectInfo: true, // disable the select info panel on top
+          disableSelectInfo: false, // disable the select info panel on top
           selectAllByGroup: true, // when used in combination with a grouped table, add a checkbox in the header row to check/uncheck the entire group
         }"
       >
         <template slot="table-row" slot-scope="props">
+          <!-- Order -->
+          <span v-if="props.column.field === 'format_order'">
+            <div style="display: block">
+              <strong>ID: </strong> <span>{{ props.row.id }}</span>
+            </div>
+            <div style="display: block">
+              <strong>Tk: </strong>
+              <span>{{
+                props.row.total_price - props.row.delivery_charge
+              }}</span>
+            </div>
+            <!-- <div style="display: block">
+              <strong>Delivery Charge: </strong>
+              <span>{{ props.row.delivery_charge }}</span>
+            </div> -->
+          </span>
           <!-- Column: head -->
           <span v-if="props.column.field === 'name'">
             <!-- {{ props.row. }} -->
@@ -103,10 +183,17 @@
           </span>
 
           <!-- Column: Status -->
-          <span v-if="props.column.field === 'status'">
+          <span v-if="props.column.field === 'format_status'">
             <b-badge variant="light-primary">
               {{ props.row.status }}
             </b-badge>
+          </span>
+
+          <!-- payment method -->
+          <span v-if="props.column.field === 'format_payment_method'">
+            <template v-if="props.row.payment_method == 'cash_on_delivery'">
+              <b-badge variant="light-primary"> COD </b-badge>
+            </template>
           </span>
 
           <!-- Column: Action -->
@@ -277,6 +364,8 @@ export default {
       roleIdOption: [],
       statusCount: '',
       rangeDate: null,
+      isRowChecked: false,
+      selectedRows: [],
 
       filterStatus: '',
       optionsRadio: [
@@ -308,6 +397,26 @@ export default {
       pageLength: 10,
       columns: [
         {
+          label: 'Order',
+          field: 'format_order',
+          sortable: false,
+        },
+        {
+          label: 'Status',
+          field: 'format_status',
+          sortable: false,
+        },
+        {
+          label: 'Updated',
+          field: 'updated_at',
+          formatFn: this.formatFnTableLastContactDate,
+        },
+        {
+          label: 'Delivery Charge',
+          field: 'delivery_charge',
+          sortable: false,
+        },
+        {
           label: 'Customer Name',
           field: 'customer.full_name',
           sortable: false,
@@ -330,25 +439,10 @@ export default {
 
         {
           label: 'Payment Method',
-          field: 'payment_method',
+          field: 'format_payment_method',
           sortable: false,
         },
 
-        {
-          label: 'Total Price',
-          field: 'total_price',
-          sortable: false,
-        },
-        {
-          label: 'Delivery Charge',
-          field: 'delivery_charge',
-          sortable: false,
-        },
-        {
-          label: 'Status',
-          field: 'status',
-          sortable: false,
-        },
         {
           label: 'Created At',
           field: 'created_at',
@@ -431,6 +525,16 @@ export default {
   },
 
   methods: {
+    selectionChanged(params) {
+      if (params?.selectedRows.length == 0) {
+        this.isRowChecked = false
+        this.selectedRows = []
+      } else {
+        this.isRowChecked = true
+        this.selectedRows = params?.selectedRows
+        console.log(this.selectedRows)
+      }
+    },
     formatFnTableLastContactDate(value) {
       if (value) {
         return this.$moment(value).format('MMM Do YYYY, h:mm a')
@@ -471,6 +575,84 @@ export default {
       //open report pdf in new tab
       link.target = '_blank' // Open in a new tab
       link.click()
+    },
+
+    // sticker generation
+    async printSelectedSticker() {
+      const orderIds = (this.selectedRows || []).map((item) => {
+        return item?.id
+      })
+
+      try {
+        const response = await this.$api.put(
+          'api/print-sticker',
+          {
+            orderIds: orderIds,
+          },
+          {
+            responseType: 'blob',
+          }
+        )
+
+        await this.saveFile(response.data)
+
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Success',
+            icon: 'BellIcon',
+            variant: 'success',
+            text: 'Sticker Generated',
+          },
+        })
+      } catch (error) {
+        if (error?.response?.data?.message) {
+          this.$toast({
+            component: ToastificationContent,
+            props: {
+              title: 'Error',
+              icon: 'BellIcon',
+              variant: 'danger',
+              text: error?.response?.data?.message,
+            },
+          })
+        }
+      }
+    },
+
+    async changeSelectedStatus(status) {
+      const orderIds = (this.selectedRows || []).map((item) => {
+        return item?.id
+      })
+
+      try {
+        await this.$api.put(`api/order/status/multiple`, {
+          ids: orderIds,
+          status: status,
+        })
+
+        this.loadItems()
+
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Success',
+            icon: 'BellIcon',
+            variant: 'success',
+            text: 'Selected records successfully changed',
+          },
+        })
+      } catch (error) {
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Error',
+            icon: 'BellIcon',
+            variant: 'danger',
+            text: error?.response?.data?.message,
+          },
+        })
+      }
     },
 
     async generateInvoice(id) {
