@@ -461,7 +461,6 @@ export default {
 
         const data = users?.data?.data
 
-        console.log(data);
         const meta = users?.data?.meta
 
         this.totalRecords = meta?.pagination?.total

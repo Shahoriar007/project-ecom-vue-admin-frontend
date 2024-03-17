@@ -163,7 +163,9 @@
           <!-- Order -->
           <span v-if="props.column.field === 'format_order'">
             <div style="display: block">
-              <strong>ID: </strong> <span>{{ props.row.id }}</span>
+              <b-link v-on:click="showModal(props.row.id)">
+                <strong>ID: </strong> <span>{{ props.row.id }}</span>
+              </b-link>
             </div>
             <div style="display: block">
               <strong>Tk: </strong>
@@ -185,7 +187,7 @@
           <!-- Column: Status -->
           <span v-if="props.column.field === 'format_status'">
             <b-badge variant="light-primary">
-              {{ props.row.status }}
+              {{ statusFormat(props.row.status) }}
             </b-badge>
           </span>
 
@@ -216,10 +218,14 @@
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
                   </b-dropdown-item>
-                  <b-dropdown-item v-on:click="generateInvoice(props.row.id)">
+                  <b-dropdown-item v-on:click="showModal(props.row.id)">
+                    <feather-icon icon="Edit2Icon" class="mr-50" />
+                    <span>View Here</span>
+                  </b-dropdown-item>
+                  <!-- <b-dropdown-item v-on:click="generateInvoice(props.row.id)">
                     <feather-icon icon="ClipboardIcon" class="mr-50" />
                     <span>Invoice</span>
-                  </b-dropdown-item>
+                  </b-dropdown-item> -->
                 </template>
 
                 <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">
@@ -278,6 +284,104 @@
         </template>
       </vue-good-table>
     </div>
+
+    <b-modal
+      id="modal-order-details"
+      centered
+      size="xl"
+      title="Order Details"
+      hide-footer
+      @hidden="hiddenModal"
+      no-close-on-backdrop
+    >
+    <b-row>
+      <b-col md="2" lg="2" xs="2">
+        <h3 v-if="modalOrderId">Order Id: {{ modalOrderId }}</h3>
+      </b-col>
+      <b-col md="10" lg="10" xs="10">
+        <h4 class="text-capitalize">Status: 
+          <b-badge variant="light-primary" style="font-size: large">
+          {{ statusFormat(modalOrderStatus) }}
+          </b-badge>
+        </h4>
+      </b-col>
+    </b-row>
+<br><br>
+      <b-row>
+        <b-col md="3" lg="3" xs="3">
+          <h5 class="text-capitalize">Customer</h5>
+          <template>
+            <div>
+              <b-card-text>
+                <strong>
+                <b-link v-on:click="onViewCustomer(modalCustomerId)">
+                  {{ modalCustomerName }}
+                </b-link>
+              </strong>
+              </b-card-text>
+                
+            </div>
+
+            <div>
+              <b-card-text>{{ modalCustomerPhone }}</b-card-text>
+            </div>
+
+            <div>
+              <b-card-text>{{ modalCustomerAddress }}</b-card-text>
+            </div>
+          </template>
+
+        </b-col>
+
+        <b-col md="9" lg="9" xs="9">
+          <b-row v-for="(item, index) in modalProducts" :key="index">
+            <b-col md="3" lg="3" xs="3">
+              <h5 class="text-capitalize">Product name</h5>
+              <template>
+                <div>
+                  <b-card-text>{{ item.name }}</b-card-text>
+                </div>
+              </template>
+            </b-col>
+
+            <b-col md="2" lg="2" xs="2">
+              <h5 class="text-capitalize">SKU</h5>
+              <template>
+                <div>
+                  <b-card-text>{{ item.sku }}</b-card-text>
+                </div>
+              </template>
+            </b-col>
+
+            <b-col md="2" lg="2" xs="2">
+              <h5 class="text-capitalize">Quantity</h5>
+              <template>
+                <div>
+                  <b-card-text>{{ item.pivot.quantity }}</b-card-text>
+                </div>
+              </template>
+            </b-col>
+
+            <b-col md="2" lg="2" xs="2">
+              <h5 class="text-capitalize">Image</h5>
+              <div class="image-container">
+                <img
+                  class="small-image"
+                  :src="item.small_pictures[0].original_url"
+                />
+                <div
+                  class="large-image"
+                  :style="{
+                    backgroundImage:
+                      'url(' + item.small_pictures[0].original_url + ')',
+                  }"
+                ></div>
+              </div>
+            </b-col>
+          </b-row>
+        </b-col>
+      </b-row>
+    </b-modal>
   </b-card>
 </template>
 
@@ -301,6 +405,8 @@ import {
   BPagination,
   BRow,
   BFormRadioGroup,
+  BCardText,
+  BLink,
 } from 'bootstrap-vue'
 import { ValidationObserver, ValidationProvider } from 'vee-validate'
 import { VueGoodTable } from 'vue-good-table'
@@ -343,6 +449,8 @@ export default {
     BInputGroup,
     BFormRadioGroup,
     flatPickr,
+    BCardText,
+    BLink,
   },
   directives: {
     Ripple,
@@ -354,7 +462,6 @@ export default {
       USERS_SHOW,
       USERS_EDIT,
       USERS_DELETE,
-      modelType: '',
       userId: '',
       name: '',
       password: '',
@@ -366,6 +473,16 @@ export default {
       rangeDate: null,
       isRowChecked: false,
       selectedRows: [],
+
+      // order details modal
+      modalOrderId: '',
+      modalCustomerName: '',
+      modalOrderStatus: '',
+
+      modalCustomerPhone: '',
+      modalCustomerAddress: '',
+      modalProducts: [],
+      modalCustomerId: '',
 
       filterStatus: '',
       optionsRadio: [
@@ -525,6 +642,35 @@ export default {
   },
 
   methods: {
+    onViewCustomer(id) {
+      this.$router.push({
+        name: 'admin-customer-history',
+        params: { id },
+      })
+    },
+    statusFormat(status) {
+      if (status == 'pending') {
+        return 'Pending'
+      } else if (status == 'processing') {
+        return 'Processing'
+      } else if (status == 'packing') {
+        return 'Packing'
+      } else if (status == 'shipping') {
+        return 'Shipping'
+      } else if (status == 'on_the_way') {
+        return 'On the way'
+      } else if (status == 'in_review') {
+        return 'In Review'
+      } else if (status == 'rejected') {
+        return 'Rejected'
+      } else if (status == 'returned') {
+        return 'Returned'
+      } else if (status == 'canceled') {
+        return 'Canceled'
+      } else if (status == 'delivered') {
+        return 'Delivered'
+      }
+    },
     selectionChanged(params) {
       if (params?.selectedRows.length == 0) {
         this.isRowChecked = false
@@ -549,22 +695,46 @@ export default {
     roleName(rowObj) {
       return rowObj?.roles?.data[0]?.name
     },
-    showModal() {
-      this.$bvModal.show('modal-users-form')
+
+    async getOrderDetails(id) {
+      return await this.$api.get(`api/orders/details/${id}`)
     },
-    hiddenModal() {
-      this.modelType = ''
-      this.$bvModal.hide('modal-users-form')
+
+    // show order details modal
+    async showModal(id) {
+      await this.getOrderDetails(id)
+        .then((response) => {
+          console.log(response.data.data)
+
+          this.modalOrderId = response.data.data.id
+          this.modalCustomerName = response.data.data.customer.full_name
+          this.modalOrderStatus = response.data.data.status
+
+          this.modalCustomerPhone = response.data.data.customer.phone
+          this.modalCustomerAddress = response.data.data.detail_address
+          this.modalProducts = response.data.data.products
+
+          this.modalCustomerId = response.data.data.customer.id
+
+          this.$bvModal.show('modal-order-details')
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    },
+    hiddenModal(id) {
+      this.$bvModal.hide('modal-order-details')
       this.resetModal()
     },
     resetModal() {
-      this.userId = ''
-      this.name = ''
-      this.selectRoleId = ''
-      this.email = ''
-      this.selectStatusValue = true
-      this.password = ''
-      this.password_confirmation = ''
+      this.modalOrderId = ''
+      this.modalCustomerName = ''
+      this.modalOrderStatus = ''
+
+      this.modalCustomerPhone = ''
+      this.modalCustomerAddress = ''
+      this.modalProducts = []
+      this.modalCustomerId = ''
     },
     // invoice generation
     saveFile(file) {
@@ -891,4 +1061,31 @@ export default {
 <style lang="scss">
 @import '@core/scss/vue/libs/vue-good-table.scss';
 @import '@core/scss/vue/libs/vue-flatpicker.scss';
+
+.image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.small-image {
+  width: 100px;
+  display: block;
+}
+
+.large-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  transition: width 0.5s, height 0.5s;
+}
+
+.image-container:hover .large-image {
+  width: 500px;
+  height: 500px;
+  z-index: 9999;
+}
 </style>
