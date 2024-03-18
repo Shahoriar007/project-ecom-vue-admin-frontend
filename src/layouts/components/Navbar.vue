@@ -17,6 +17,10 @@
     </div>
 
     <b-navbar-nav class="nav align-items-center ml-auto">
+      <notification-dropdown />
+      <!-- check in and out -->
+      
+      <!-- check in and out -->
       <b-nav-item-dropdown
         right
         toggle-class="d-flex align-items-center dropdown-user-link"
@@ -29,7 +33,12 @@
             </p>
             <span class="user-status">
               <!-- designation -->
-              {{ user?.designation?.data?.name }}
+              <!-- <template v-if="user?.designation?.data?.name.length >= 10">
+                {{ user?.designation?.data?.name.substr(0, 10) }}...
+              </template>
+              <template v-else>
+                {{ user?.designation?.data?.name }}
+              </template> -->
             </span>
           </div>
           <b-avatar
@@ -47,7 +56,10 @@
           v-on:click.prevent="
             () =>
               $route.name != 'user-profile'
-                ? $router.push({ name: 'user-profile' })
+                ? $router.push({
+                    name: 'user-profile',
+                    params: { id: user.id },
+                  })
                 : null
           "
         >
@@ -55,7 +67,7 @@
           <span>Profile</span>
         </b-dropdown-item>
 
-        <b-dropdown-item link-class="d-flex align-items-center">
+        <!-- <b-dropdown-item link-class="d-flex align-items-center">
           <feather-icon size="16" icon="MailIcon" class="mr-50" />
           <span>Inbox</span>
         </b-dropdown-item>
@@ -68,7 +80,7 @@
         <b-dropdown-item link-class="d-flex align-items-center">
           <feather-icon size="16" icon="MessageSquareIcon" class="mr-50" />
           <span>Chat</span>
-        </b-dropdown-item>
+        </b-dropdown-item> -->
 
         <b-dropdown-divider />
 
@@ -85,18 +97,18 @@
 </template>
 
 <script>
-import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
-import DarkToggler from '@core/layouts/components/app-navbar/components/DarkToggler.vue'
+import { mapGetters } from "vuex";
 import {
-  BAvatar,
-  BDropdownDivider,
-  BDropdownItem,
   BLink,
-  BNavItemDropdown,
   BNavbarNav,
-} from 'bootstrap-vue'
-import { mapGetters } from 'vuex'
-
+  BNavItemDropdown,
+  BDropdownItem,
+  BDropdownDivider,
+  BAvatar,
+} from "bootstrap-vue";
+import DarkToggler from "@core/layouts/components/app-navbar/components/DarkToggler.vue";
+import ToastificationContent from "@core/components/toastification/ToastificationContent.vue";
+import NotificationDropdown from "./notification/NotificationDropdown";
 export default {
   components: {
     BLink,
@@ -105,6 +117,7 @@ export default {
     BDropdownItem,
     BDropdownDivider,
     BAvatar,
+    NotificationDropdown,
 
     // Navbar Components
     DarkToggler,
@@ -115,44 +128,49 @@ export default {
       default: () => {},
     },
   },
+  data() {
+    return {
+    };
+  },
   computed: {
     ...mapGetters({
-      user: 'userModule/getUser',
+      user: "userModule/getUser",
+      permissions: "userModule/getPermissions",
     }),
     avatar() {
-      return require('@/assets/images/avatars/avatar.webp')
+      return require("@/assets/images/avatars/avatar.webp");
     },
   },
   methods: {
     onLogout: async function () {
       try {
-        await this.$api.post('api/logout')
+        await this.$api.post("api/logout");
 
-        await this.$store.dispatch('authModule/setIsAuthenticated', {
+        await this.$store.dispatch("authModule/setIsAuthenticated", {
           isAuthenticated: false,
           token: null,
-        })
+        });
 
-        await this.$store.dispatch('authModule/clearPersistedState')
+        await this.$store.dispatch("authModule/clearPersistedState");
 
-        await this.$store.dispatch('userModule/removeUser')
+        await this.$store.dispatch("userModule/removeUser");
 
-        await this.$store.dispatch('userModule/setPermissions', {
+        await this.$store.dispatch("userModule/setPermissions", {
           permissions: null,
-        })
+        });
 
-        this.$router.replace({ name: 'login' })
+        this.$router.replace({ name: "login" });
       } catch (error) {
         this.$toast({
           component: ToastificationContent,
           props: {
             title: `${error?.response?.data?.message}`,
-            icon: 'BellIcon',
-            variant: 'danger',
+            icon: "BellIcon",
+            variant: "danger",
           },
-        })
+        });
       }
     },
   },
-}
+};
 </script>

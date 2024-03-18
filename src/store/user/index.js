@@ -3,37 +3,49 @@ export const userModule = {
   state: {
     user: null,
     permissions: null,
+    incomingNotificationCount: 0,
   },
   getters: {
+    getIncomingNotificationCount: function (state) {
+      return state.incomingNotificationCount
+    },
     getUser: function (state) {
-      return state.user;
+      return state.user
     },
     getPermissions: function (state) {
-      return state.permissions;
+      return state.permissions
     },
   },
   mutations: {
+    setIncomingNotificationCount: function (state, payload) {
+      state.incomingNotificationCount = payload.incomingNotificationCount
+    },
     setUser: function (state, payload) {
-      state.user = payload.user;
+      state.user = payload.user
     },
     removeUser: function (state, payload) {
-      state.user = null;
+      state.user = null
     },
     setPermissions: function (state, payload) {
-      state.permissions = payload.permissions;
+      state.permissions = payload.permissions
     },
   },
   actions: {
+    setIncomingNotificationCount: function (context, payload) {
+      context.commit('setIncomingNotificationCount', {
+        incomingNotificationCount: payload.incomingNotificationCount,
+      })
+    },
     setUser: function (context, payload) {
-      context.commit("setUser", { user: payload.user });
+      context.commit('setUser', { user: payload.user })
     },
     removeUser: function (context, payload) {
-      context.commit("removeUser");
+      context.commit('removeUser')
     },
     setPermissions: function (context, payload) {
-      context.commit("setPermissions", {
+      context.commit('setPermissions', {
         permissions: payload.permissions,
-      });
+      })
     },
   },
-};
+}

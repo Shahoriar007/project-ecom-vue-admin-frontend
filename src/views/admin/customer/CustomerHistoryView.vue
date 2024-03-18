@@ -59,9 +59,60 @@
               </div>
             </template>
           </b-col>
-
       </b-row>
-    
+    </b-card>
+
+    <b-card>
+      <b-row>
+        <b-col md="2" lg="2" xs="2">
+            <h5 class="text-capitalize">Pending</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalPendingCount }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+          <b-col md="2" lg="2" xs="2">
+
+            <h5 class="text-capitalize">Processing</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalProcessingCount }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+        <b-col md="2" lg="2" xs="2">
+
+            <h5 class="text-capitalize">Cancel</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalCancelCount }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+          <b-col md="2" lg="2" xs="2">
+
+            <h5 class="text-capitalize">Returned</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalReturnedCount }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+          <b-col md="2" lg="2" xs="2">
+
+            <h5 class="text-capitalize">Delivered</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalDeliveredCount }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+      </b-row>
 
     </b-card>
 
@@ -92,27 +143,18 @@
           enabled: true,
           perPage: pageLength,
         }"
-        :select-options="{
-          enabled: true,
-          selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
-          selectionInfoClass: 'custom-class',
-          selectionText: 'rows selected',
-          clearSelectionText: 'clear',
-          disableSelectInfo: true, // disable the select info panel on top
-          selectAllByGroup: true, // when used in combination with a grouped table, add a checkbox in the header row to check/uncheck the entire group
-        }"
+        
       >
         <template slot="table-row" slot-scope="props">
           <!-- Column: head -->
-          <span v-if="props.column.field === 'name'">
-            <!-- {{ props.row. }} -->
-            name
+          <span v-if="props.column.field === 'format_id'">
+            <strong>ID : </strong>{{ props.row.id }}
           </span>
 
           <!-- Column: Status -->
-          <span v-if="props.column.field === 'status'">
+          <span v-if="props.column.field === 'format_status'">
             <b-badge variant="light-primary">
-              {{ props.row.status }}
+              {{ statusFormat(props.row.status) }}
             </b-badge>
           </span>
 
@@ -194,8 +236,6 @@
         </template>
       </vue-good-table>
 
-
-    
   </b-card>
 
   </div>
@@ -221,6 +261,7 @@ import {
   BModal,
   BPagination,
   BRow,
+  BCardText,
 } from 'bootstrap-vue'
 import { ValidationObserver, ValidationProvider } from 'vee-validate'
 import { VueGoodTable } from 'vue-good-table'
@@ -260,6 +301,7 @@ export default {
     BModal,
     BInputGroupAppend,
     BInputGroup,
+    BCardText,
   },
   directives: {
     Ripple,
@@ -282,6 +324,12 @@ export default {
       totalPurchaseAmount: "",
       customerInfo: {},
 
+      totalPendingCount: '',
+      totalProcessingCount: '',
+      totalCancelCount: '',
+      totalReturnedCount: '',
+      totalDeliveredCount: '',
+
       selectStatusValue: true,
       statusValueOption: [
         {
@@ -297,8 +345,8 @@ export default {
       pageLength: 10,
       columns: [
       {
-          label: 'Customer Name',
-          field: 'customer.full_name',
+          label: 'Order',
+          field: 'format_id',
           sortable: false,
         },
         {
@@ -325,7 +373,7 @@ export default {
         },
         {
           label: 'Status',
-          field: 'status',
+          field: 'format_status',
           sortable: false,
         },
         {
@@ -395,6 +443,30 @@ export default {
   },
 
   methods: {
+    statusFormat(status) {
+      if (status == 'pending') {
+        return 'Pending'
+      } else if (status == 'processing') {
+        return 'Processing'
+      } else if (status == 'packing') {
+        return 'Packing'
+      } else if (status == 'shipping') {
+        return 'Shipping'
+      } else if (status == 'on_the_way') {
+        return 'On the way'
+      } else if (status == 'in_review') {
+        return 'In Review'
+      } else if (status == 'rejected') {
+        return 'Rejected'
+      } else if (status == 'returned') {
+        return 'Returned'
+      } else if (status == 'canceled') {
+        return 'Canceled'
+      } else if (status == 'delivered') {
+        return 'Delivered'
+      }
+    },
+
     formatFnTableLastContactDate(value) {
       if (value) {
         return this.$moment(value).format('MMM Do YYYY, h:mm a')
@@ -502,7 +574,12 @@ export default {
       this.updateParams(params)
       this.loadItems()
     },
-    async getUsers(params) {
+
+    async getTotalOrderAmount(id) {
+      return await this.$api.get(`api/customer/${id}/total-order-amount`)
+    },
+
+    async getOrders(params) {
       return await this.$api.get('api/orders/all', {
         params: {
           show: params.show,
@@ -519,8 +596,8 @@ export default {
 
     async loadItems() {
       try {
-        const [users] = await Promise.all([
-          this.getUsers({
+        const [order] = await Promise.all([
+          this.getOrders({
             show: this.serverParams.perPage,
             page: this.serverParams.page,
             sort: this.serverParams.sort,
@@ -529,20 +606,34 @@ export default {
           }),
         ])
 
-        const data = users?.data?.data;
+        const data = order?.data?.data;
 
-        const meta = users?.data?.meta;
+        console.log(data);
+
+        const meta = order?.data?.meta;
 
         this.totalRecords = meta?.pagination?.total;
 
         this.rows = data;
 
          // i want sum of total purchase amount from data.total_price
-         this.totalPurchaseAmount = data.reduce((acc, item) => {
-          return acc + Number(item.total_price)
-        }, 0) 
+        //  this.totalPurchaseAmount = data.reduce((acc, item) => {
+        //   return acc + Number(item.total_price)
+        // }, 0) 
 
         this.customerInfo = data[0]?.customer;
+
+
+        const totalPurchaseAmount = await this.getTotalOrderAmount(this.$route.params.id);
+
+
+
+        this.totalPurchaseAmount = totalPurchaseAmount.data.totalOrderAmount;
+        this.totalPendingCount = totalPurchaseAmount.data.totalPendingCount;
+        this.totalProcessingCount = totalPurchaseAmount.data.totalProcessingCount;
+        this.totalCancelCount = totalPurchaseAmount.data.totalCancelledCount;
+        this.totalReturnedCount = totalPurchaseAmount.data.totalReturnedCount;
+        this.totalDeliveredCount = totalPurchaseAmount.data.totalDeliveredCount;
 
 
       } catch (error) {

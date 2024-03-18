@@ -81,10 +81,7 @@
                     <feather-icon icon="TrashIcon" class="mr-50" />
                     <span>Block Customer</span>
                   </b-dropdown-item>
-                  <b-dropdown-item v-on:click="onView(props.row.id)">
-                    <feather-icon icon="TrashIcon" class="mr-50" />
-                    <span>Print PDF</span>
-                  </b-dropdown-item>
+                  
                 </template>
 
                 <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">
@@ -464,7 +461,6 @@ export default {
 
         const data = users?.data?.data
 
-        console.log(data);
         const meta = users?.data?.meta
 
         this.totalRecords = meta?.pagination?.total
