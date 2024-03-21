@@ -1002,10 +1002,10 @@ export default {
             const height = image.naturalHeight
             const width = image.naturalWidth
 
-            if (height !== 720 || width !== 720) {
-              alert('Please select an image with dimensions 720x720 pixels.')
-              return
-            }
+            // if (height !== 720 || width !== 720) {
+            //   alert('Please select an image with dimensions 720x720 pixels.')
+            //   return
+            // }
 
             this.imageArray.push({
               file: file,
