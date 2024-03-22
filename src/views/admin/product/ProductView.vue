@@ -1051,6 +1051,8 @@ export default {
       this.previewImage = 'https://placehold.co/720x720'
       this.status = true
       this.categoryId = ''
+      this.subCategoryId = ''
+      this.childCategoryId = ''
       this.skuCode = ''
       this.quantity = ''
       this.price = ''

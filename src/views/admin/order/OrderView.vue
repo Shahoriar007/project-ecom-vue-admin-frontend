@@ -57,6 +57,16 @@
                   >Mark as Pending</b-dropdown-item
                 >
                 <b-dropdown-item
+                  value="pending-1"
+                  @click="changeSelectedStatus('pending-1')"
+                  >Mark as Pending 1</b-dropdown-item
+                >
+                <b-dropdown-item
+                  value="pending-2"
+                  @click="changeSelectedStatus('pending-2')"
+                  >Mark as Pending 2</b-dropdown-item
+                >
+                <b-dropdown-item
                   value="processing"
                   @click="changeSelectedStatus('processing')"
                   >Mark as Processing</b-dropdown-item
@@ -162,19 +172,19 @@
         <template slot="table-row" slot-scope="props">
           <!-- Order -->
           <span v-if="props.column.field === 'format_order'">
+            
             <div style="display: block">
               <b-link v-on:click="showModal(props.row.id)">
-                <strong>ID: </strong> <span>{{ props.row.id }}</span>
+                <strong>ID: </strong> <span>{{ props.row.id }}</span> <span v-if="props.row.comment" style="color: red;">*</span>
               </b-link>
             </div>
+
             <div style="display: block">
               <strong>Tk: </strong>
-              <span>{{
-                props.row.total_price - props.row.delivery_charge
-              }}</span>
+              <span>{{ props.row.total_price }}</span>
             </div>
             <!-- <div style="display: block">
-              <strong>Delivery Charge: </strong>
+              <strong>Delivery : </strong>
               <span>{{ props.row.delivery_charge }}</span>
             </div> -->
           </span>
@@ -196,6 +206,18 @@
             <template v-if="props.row.payment_method == 'cash_on_delivery'">
               <b-badge variant="light-primary"> COD </b-badge>
             </template>
+          </span>
+
+          <!-- format delivery charge -->
+          <span v-if="props.column.field === 'format_delivery_charge'">
+            <div style="display: block">
+              <span
+                ><strong>{{ props.row.order_from }}</strong></span
+              >
+            </div>
+            <div style="display: block">
+              Tk: {{ props.row.delivery_charge }}
+            </div>
           </span>
 
           <!-- Column: Action -->
@@ -221,6 +243,12 @@
                   <b-dropdown-item v-on:click="showModal(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View Here</span>
+                  </b-dropdown-item>
+                  <b-dropdown-item
+                    v-on:click="showOrderCommentModal(props.row.id)"
+                  >
+                    <feather-icon icon="Edit2Icon" class="mr-50" />
+                    <span>Followup</span>
                   </b-dropdown-item>
                   <!-- <b-dropdown-item v-on:click="generateInvoice(props.row.id)">
                     <feather-icon icon="ClipboardIcon" class="mr-50" />
@@ -294,32 +322,38 @@
       @hidden="hiddenModal"
       no-close-on-backdrop
     >
-    <b-row>
-      <b-col md="2" lg="2" xs="2">
-        <h3 v-if="modalOrderId">Order Id: {{ modalOrderId }}</h3>
-      </b-col>
-      <b-col md="10" lg="10" xs="10">
-        <h4 class="text-capitalize">Status: 
-          <b-badge variant="light-primary" style="font-size: large">
-          {{ statusFormat(modalOrderStatus) }}
-          </b-badge>
-        </h4>
-      </b-col>
-    </b-row>
-<br><br>
       <b-row>
-        <b-col md="3" lg="3" xs="3">
+        <b-col md="2" lg="2" xs="2">
+          <h3 v-if="modalOrderId">Order Id: {{ modalOrderId }}</h3>
+        </b-col>
+        <b-col md="10" lg="10" xs="10">
+          <h4 class="text-capitalize">
+            Status:
+            <b-badge variant="light-primary" style="font-size: large">
+              {{ statusFormat(modalOrderStatus) }}
+            </b-badge>
+          </h4>
+        </b-col>
+      </b-row>
+      <br /><br />
+      <b-row>
+        <b-col md="2" lg="2" xs="2">
           <h5 class="text-capitalize">Customer</h5>
           <template>
             <div>
               <b-card-text>
                 <strong>
-                <b-link v-on:click="onViewCustomer(modalCustomerId)">
-                  {{ modalCustomerName }}
-                </b-link>
-              </strong>
+                  <b-link v-on:click="onViewCustomer(modalCustomerId)">
+                    {{ modalCustomerName }} 
+                    <b-badge v-if="modalCustomerStatus" variant="light-danger">
+                      Band
+                    </b-badge>
+                    <b-badge v-else variant="light-success">
+                      Active
+                    </b-badge>
+                  </b-link>
+                </strong>
               </b-card-text>
-                
             </div>
 
             <div>
@@ -331,9 +365,43 @@
             </div>
           </template>
 
+          <template>
+            <br>
+          <h5 class="text-capitalize">Customer Status Change</h5>
+            <div>
+              <b-button
+                v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+                type="submit"
+                variant="primary"
+                class="mr-1"
+                @click="bandActiveCustomer"
+              >
+                <template v-if="modalCustomerStatus">
+                  Active
+                </template>
+                <template v-else>
+                  Band
+                </template>
+              </b-button>
+            </div>
+          </template>
         </b-col>
 
-        <b-col md="9" lg="9" xs="9">
+        <b-col md="2" lg="2" xs="2">
+          <h5 class="text-capitalize">Customer Status</h5>
+          <template>
+            <div>
+              
+            </div>
+
+          </template>
+        </b-col>
+
+
+
+
+
+        <b-col md="8" lg="8" xs="8">
           <b-row v-for="(item, index) in modalProducts" :key="index">
             <b-col md="3" lg="3" xs="3">
               <h5 class="text-capitalize">Product name</h5>
@@ -382,6 +450,40 @@
         </b-col>
       </b-row>
     </b-modal>
+
+    <b-modal
+      id="order-comment-modal"
+      centered
+      size="lg"
+      title="Followup Comment"
+      hide-footer
+      @hidden="hiddenOrderCommentModal"
+      no-close-on-backdrop
+    >
+      <b-row>
+        <b-col md="12" lg="12" xs="12">
+          <b-form-textarea
+            id="address"
+            type="text"
+            v-model="followupComment"
+            placeholder="Followup Comment"
+            rows="3"
+          />
+        </b-col>
+
+        <b-col cols="12" style="margin-top: 10px;">
+              <b-button
+                v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+                type="submit"
+                variant="primary"
+                class="mr-1"
+                @click="submitFollowupComment"
+              >
+                Submit
+              </b-button>
+            </b-col>
+      </b-row>
+    </b-modal>
   </b-card>
 </template>
 
@@ -407,6 +509,7 @@ import {
   BFormRadioGroup,
   BCardText,
   BLink,
+  BFormTextarea,
 } from 'bootstrap-vue'
 import { ValidationObserver, ValidationProvider } from 'vee-validate'
 import { VueGoodTable } from 'vue-good-table'
@@ -451,6 +554,7 @@ export default {
     flatPickr,
     BCardText,
     BLink,
+    BFormTextarea,
   },
   directives: {
     Ripple,
@@ -478,16 +582,22 @@ export default {
       modalOrderId: '',
       modalCustomerName: '',
       modalOrderStatus: '',
+      modalCustomerStatus: '',
 
       modalCustomerPhone: '',
       modalCustomerAddress: '',
       modalProducts: [],
       modalCustomerId: '',
+      orderComment: '',
+      followupComment: '',
+      commentModalOrderId: '',
 
       filterStatus: '',
       optionsRadio: [
         { text: 'All', value: 'all' },
         { text: 'Pending', value: 'pending' },
+        { text: 'Pending 1', value: 'pending-1' },
+        { text: 'Pending 2', value: 'pending-2' },
         { text: 'Processing', value: 'processing' },
         { text: 'Packing', value: 'packing' },
         { text: 'Shipping', value: 'shipping' },
@@ -529,8 +639,8 @@ export default {
           formatFn: this.formatFnTableLastContactDate,
         },
         {
-          label: 'Delivery Charge',
-          field: 'delivery_charge',
+          label: 'Delivery',
+          field: 'format_delivery_charge',
           sortable: false,
         },
         {
@@ -642,6 +752,71 @@ export default {
   },
 
   methods: {
+
+    async bandActiveCustomer() {
+      try {
+        await this.$api.get(`api/customer/band-active/${this.modalCustomerId}`)
+
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Success',
+            icon: 'CheckIcon',
+            variant: 'success',
+            text: "Customer Status Changed",
+          },
+        })
+
+        // this.hiddenModal($this.modalCustomerId);
+        // this.showModal($this.modalCustomerId);
+
+      } catch (error) {
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Error',
+            icon: 'BellIcon',
+            variant: 'danger',
+            text: "Customer Status Change Failed",
+          },
+        })
+      }
+    },
+
+    async submitFollowupComment() {
+
+      try {
+        const response = await this.$api.post(`api/update-comment`, {
+          id: this.commentModalOrderId,
+          comment: this.followupComment,
+        });
+
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: "Success",
+            icon: "CheckIcon",
+            variant: "success",
+            text: "Comment Updated",
+          },
+        });
+
+        this.hiddenOrderCommentModal();
+
+      } catch (error) {
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: "Error",
+            icon: "BellIcon",
+            variant: "danger",
+
+            text: error?.response?.data?.message,
+          },
+        });
+      } 
+    },
+    
     onViewCustomer(id) {
       this.$router.push({
         name: 'admin-customer-history',
@@ -649,27 +824,22 @@ export default {
       })
     },
     statusFormat(status) {
-      if (status == 'pending') {
-        return 'Pending'
-      } else if (status == 'processing') {
-        return 'Processing'
-      } else if (status == 'packing') {
-        return 'Packing'
-      } else if (status == 'shipping') {
-        return 'Shipping'
-      } else if (status == 'on_the_way') {
-        return 'On the way'
-      } else if (status == 'in_review') {
-        return 'In Review'
-      } else if (status == 'rejected') {
-        return 'Rejected'
-      } else if (status == 'returned') {
-        return 'Returned'
-      } else if (status == 'canceled') {
-        return 'Canceled'
-      } else if (status == 'delivered') {
-        return 'Delivered'
+      const statusMap = {
+        pending: 'Pending',
+        'pending-1': 'Pending 1',
+        'pending-2': 'Pending 2',
+        processing: 'Processing',
+        packing: 'Packing',
+        shipping: 'Shipping',
+        on_the_way: 'On the way',
+        in_review: 'In Review',
+        rejected: 'Rejected',
+        returned: 'Returned',
+        canceled: 'Canceled',
+        delivered: 'Delivered',
       }
+
+      return statusMap[status]
     },
     selectionChanged(params) {
       if (params?.selectedRows.length == 0) {
@@ -709,6 +879,7 @@ export default {
           this.modalOrderId = response.data.data.id
           this.modalCustomerName = response.data.data.customer.full_name
           this.modalOrderStatus = response.data.data.status
+          this.modalCustomerStatus = response.data.data.customer.is_band
 
           this.modalCustomerPhone = response.data.data.customer.phone
           this.modalCustomerAddress = response.data.data.detail_address
@@ -726,6 +897,27 @@ export default {
       this.$bvModal.hide('modal-order-details')
       this.resetModal()
     },
+
+    async showOrderCommentModal(id) {
+      this.commentModalOrderId = id;
+
+      await this.getOrderDetails(id)
+        .then((response) => {
+          this.followupComment = response.data.data.comment
+          this.$bvModal.show('order-comment-modal')
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+      this.$bvModal.show('order-comment-modal')
+    },
+
+    hiddenOrderCommentModal() {
+      this.followupComment = ''
+      this.commentModalOrderId = ''
+      this.$bvModal.hide('order-comment-modal')
+    },
+
     resetModal() {
       this.modalOrderId = ''
       this.modalCustomerName = ''

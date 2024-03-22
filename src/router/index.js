@@ -17,6 +17,7 @@ import fbPixelRouter from './fbPixelRouter'
 import customerRouter from './customerRouter'
 import orderRouter from './orderRouter'
 import customerHistoryRouter from './customerHistoryRouter'
+import masterSettingRouter from './masterSettingRouter'
 
 Vue.use(VueRouter)
 
@@ -56,6 +57,7 @@ const router = new VueRouter({
     ...orderRouter,
     ...customerHistoryRouter,
     ...fbPixelRouter,
+    ...masterSettingRouter,
     {
       path: '/error-404',
       name: 'error-404',

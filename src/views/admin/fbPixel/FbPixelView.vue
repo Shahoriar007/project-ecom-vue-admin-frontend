@@ -7,14 +7,14 @@
           class="d-flex flex-column flex-sm-row align-items-center mb-1 justify-content-around"
         >
           <template v-if="$permissionAbility(USERS_CREATE, permissions)">
-            <b-button
+            <!-- <b-button
               class="flex-shrink-0"
               v-ripple.400="'rgba(255, 255, 255, 0.15)'"
               variant="primary"
               v-on:click="showModal"
             >
               Create
-            </b-button>
+            </b-button> -->
           </template>
         </div>
       </div>

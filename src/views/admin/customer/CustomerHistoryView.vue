@@ -444,27 +444,22 @@ export default {
 
   methods: {
     statusFormat(status) {
-      if (status == 'pending') {
-        return 'Pending'
-      } else if (status == 'processing') {
-        return 'Processing'
-      } else if (status == 'packing') {
-        return 'Packing'
-      } else if (status == 'shipping') {
-        return 'Shipping'
-      } else if (status == 'on_the_way') {
-        return 'On the way'
-      } else if (status == 'in_review') {
-        return 'In Review'
-      } else if (status == 'rejected') {
-        return 'Rejected'
-      } else if (status == 'returned') {
-        return 'Returned'
-      } else if (status == 'canceled') {
-        return 'Canceled'
-      } else if (status == 'delivered') {
-        return 'Delivered'
+      const statusMap = {
+        'pending': 'Pending',
+        'pending-1': 'Pending 1',
+        'pending-2': 'Pending 2',
+        'processing': 'Processing',
+        'packing': 'Packing',
+        'shipping': 'Shipping',
+        'on_the_way': 'On the way',
+        'in_review': 'In Review',
+        'rejected': 'Rejected',
+        'returned': 'Returned',
+        'canceled': 'Canceled',
+        'delivered': 'Delivered'
       }
+
+      return statusMap[status]
     },
 
     formatFnTableLastContactDate(value) {

@@ -35,6 +35,15 @@
           </b-col>
 
           <b-col md="3" lg="3" xs="3">
+            <h5 class="text-capitalize">Order Status</h5>
+            <template>
+              <b-badge variant="light-primary" >
+              {{ statusFormat(orderData?.status) }}
+            </b-badge>
+            </template>
+          </b-col>
+
+          <!-- <b-col md="3" lg="3" xs="3">
             <b-dropdown
               id="dropdown-1"
               v-ripple.400="'rgba(255, 255, 255, 0.15)'"
@@ -92,7 +101,7 @@
                 >Delivered</b-dropdown-item
               >
             </b-dropdown>
-          </b-col>
+          </b-col> -->
         </b-row>
 
         <b-row>
@@ -105,14 +114,7 @@
             </template>
           </b-col>
 
-          <b-col md="4" lg="4" xs="4">
-            <h5 class="text-capitalize">Order Status</h5>
-            <template>
-              <div>
-                <b-card-text>{{ orderData?.status }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
+          
         </b-row>
       </b-card>
     </b-col>
@@ -467,6 +469,24 @@ export default {
   },
 
   methods: {
+    statusFormat(status) {
+      const statusMap = {
+        'pending': 'Pending',
+        'pending-1': 'Pending 1',
+        'pending-2': 'Pending 2',
+        'processing': 'Processing',
+        'packing': 'Packing',
+        'shipping': 'Shipping',
+        'on_the_way': 'On the way',
+        'in_review': 'In Review',
+        'rejected': 'Rejected',
+        'returned': 'Returned',
+        'canceled': 'Canceled',
+        'delivered': 'Delivered'
+      }
+
+      return statusMap[status]
+    },
     selectedStatus(status) {
       this.$api
         .post(`api/update-status`, {
