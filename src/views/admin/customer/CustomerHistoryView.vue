@@ -73,12 +73,67 @@
             </template>
           </b-col>
 
+        <b-col md="2" lg="2" xs="2">
+            <h5 class="text-capitalize">Pending 1</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalPending1Count }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+        <b-col md="2" lg="2" xs="2">
+            <h5 class="text-capitalize">Pending 2</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalPending2Count }}</b-card-text>
+              </div>
+            </template>
+
+          </b-col>
+
           <b-col md="2" lg="2" xs="2">
 
             <h5 class="text-capitalize">Processing</h5>
             <template>
               <div>
                 <b-card-text>{{ totalProcessingCount }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+          <b-col md="2" lg="2" xs="2">
+            <h5 class="text-capitalize">Packing</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalPackagingCount }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+          <b-col md="2" lg="2" xs="2">
+            <h5 class="text-capitalize">Shipping</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalShippingCount }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+          <b-col md="2" lg="2" xs="2">
+            <h5 class="text-capitalize">On The Way</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalOnTheWayCount }}</b-card-text>
+              </div>
+            </template>
+          </b-col>
+
+          <b-col md="2" lg="2" xs="2">
+            <h5 class="text-capitalize">In Review</h5>
+            <template>
+              <div>
+                <b-card-text>{{ totalInReviewCount }}</b-card-text>
               </div>
             </template>
           </b-col>
@@ -325,7 +380,13 @@ export default {
       customerInfo: {},
 
       totalPendingCount: '',
+      totalPending1Count: '',
+      totalPending2Count: '',
       totalProcessingCount: '',
+      totalPackagingCount: '',
+      totalShippingCount: '',
+      totalOnTheWayCount: '',
+      totalInReviewCount: '',
       totalCancelCount: '',
       totalReturnedCount: '',
       totalDeliveredCount: '',
@@ -625,7 +686,13 @@ export default {
 
         this.totalPurchaseAmount = totalPurchaseAmount.data.totalOrderAmount;
         this.totalPendingCount = totalPurchaseAmount.data.totalPendingCount;
+        this.totalPending1Count = totalPurchaseAmount.data.totalPending1Count;
+        this.totalPending2Count = totalPurchaseAmount.data.totalPending2Count;
         this.totalProcessingCount = totalPurchaseAmount.data.totalProcessingCount;
+        this.totalPackagingCount = totalPurchaseAmount.data.totalPackagingCount;
+        this.totalShippingCount = totalPurchaseAmount.data.totalShippingCount;
+        this.totalOnTheWayCount = totalPurchaseAmount.data.totalOnTheWayCount;
+        this.totalInReviewCount = totalPurchaseAmount.data.totalInReviewCount;
         this.totalCancelCount = totalPurchaseAmount.data.totalCancelledCount;
         this.totalReturnedCount = totalPurchaseAmount.data.totalReturnedCount;
         this.totalDeliveredCount = totalPurchaseAmount.data.totalDeliveredCount;

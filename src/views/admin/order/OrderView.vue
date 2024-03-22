@@ -345,13 +345,14 @@
                 <strong>
                   <b-link v-on:click="onViewCustomer(modalCustomerId)">
                     {{ modalCustomerName }} 
-                    <b-badge v-if="modalCustomerStatus" variant="light-danger">
-                      Band
-                    </b-badge>
-                    <b-badge v-else variant="light-success">
-                      Active
-                    </b-badge>
                   </b-link>
+
+                  <b-badge v-if="modalCustomerStatus" variant="light-danger">
+                    Band
+                  </b-badge>
+                  <b-badge v-else variant="light-success">
+                    Active
+                  </b-badge>
                 </strong>
               </b-card-text>
             </div>
