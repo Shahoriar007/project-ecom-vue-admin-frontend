@@ -7,14 +7,14 @@
           class="d-flex flex-column flex-sm-row align-items-center mb-1 justify-content-around"
         >
           <template v-if="$permissionAbility(USERS_CREATE, permissions)">
-            <!-- <b-button
+            <b-button
               class="flex-shrink-0"
               v-ripple.400="'rgba(255, 255, 255, 0.15)'"
               variant="primary"
               v-on:click="showModal"
             >
               Create
-            </b-button> -->
+            </b-button>
           </template>
         </div>
       </div>
@@ -118,7 +118,7 @@
     </div>
 
     <b-modal
-      id="modal-users-form"
+      id="modal-fb-pixel-form"
       centered
       :title="modelType == 'editModel' ? 'Edit User' : 'Create User'"
       hide-footer
@@ -128,163 +128,31 @@
       <validation-observer ref="usersValidation">
         <b-form v-on:submit.prevent="validationForm">
           <b-row>
-            <!-- name -->
+            <!-- code  -->
             <b-col cols="12">
-              <b-form-group label="Name" label-for="name">
+              <b-form-group label="Pixel Code" label-for="pixel_code">
                 <validation-provider
                   #default="{ errors }"
-                  name="name"
-                  vid="name"
+                  name="pixel_code"
+                  vid="pixel_code"
                   :rules="`${
                     modelType == 'editModel' ? '' : 'required'
-                  }|max:255`"
+                  }`"
                 >
-                  <b-form-input
-                    id="name"
+                <b-form-textarea
+                    id="pixel_code"
                     type="text"
-                    v-model="name"
+                    v-model="pixelCode"
                     :state="errors.length > 0 ? false : null"
-                    name="name"
-                    placeholder="John Doe"
+                    placeholder="Pixel Code"
+                    rows="10"
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
                 </validation-provider>
               </b-form-group>
             </b-col>
 
-            <!-- email -->
-            <b-col cols="12">
-              <b-form-group label="Email" label-for="email">
-                <validation-provider
-                  #default="{ errors }"
-                  name="email"
-                  :rules="`${modelType == 'editModel' ? '' : 'required'}|email`"
-                  vid="email"
-                >
-                  <b-form-input
-                    id="email"
-                    v-model="email"
-                    :state="errors.length > 0 ? false : null"
-                    name="email"
-                    placeholder="john@example.com"
-                  />
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </validation-provider>
-              </b-form-group>
-            </b-col>
-
-            <!-- status -->
-            <b-col cols="12">
-              <b-form-group label="Status" label-for="status">
-                <ValidationProvider
-                  name="status"
-                  v-slot="{ errors }"
-                  vid="status"
-                  :rules="`${modelType == 'editModel' ? '' : 'required'}`"
-                >
-                  <v-select
-                    id="status"
-                    v-model="selectStatusValue"
-                    :options="statusValueOption"
-                    :reduce="(option) => option.value"
-                    label="name"
-                  />
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </ValidationProvider>
-              </b-form-group>
-            </b-col>
-
-            <!-- select role-->
-            <b-col cols="12">
-              <b-form-group label="Role" label-for="role-id">
-                <ValidationProvider
-                  name="role_id"
-                  v-slot="{ errors }"
-                  vid="role_id"
-                  :rules="`${modelType == 'editModel' ? '' : 'required'}`"
-                >
-                  <v-select
-                    id="role-id"
-                    placeholder="Choose a role"
-                    v-model="selectRoleId"
-                    :options="roleIdOption"
-                    :reduce="(option) => option.id"
-                    label="name"
-                  />
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </ValidationProvider>
-              </b-form-group>
-            </b-col>
-
-            <!-- password -->
-            <b-col cols="12">
-              <b-form-group label="Password" label-for="password">
-                <validation-provider
-                  #default="{ errors }"
-                  name="password"
-                  :rules="`${modelType == 'editModel' ? '' : 'required'}|min:6`"
-                  vid="password"
-                >
-                  <b-input-group
-                    class="input-group-merge"
-                    :class="errors.length > 0 ? 'is-invalid' : null"
-                  >
-                    <b-form-input
-                      id="password"
-                      v-model="password"
-                      :state="errors.length > 0 ? false : null"
-                      class="form-control-merge"
-                      :type="passwordFieldType"
-                      name="user-password"
-                      placeholder="············"
-                    />
-                    <b-input-group-append
-                      is-text
-                      v-on:click="togglePasswordVisibility"
-                    >
-                      <feather-icon
-                        class="cursor-pointer"
-                        :icon="passwordToggleIcon"
-                      />
-                    </b-input-group-append>
-                  </b-input-group>
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </validation-provider>
-              </b-form-group>
-            </b-col>
-
-            <!-- Confirm Password -->
-            <b-col cols="12">
-              <b-form-group
-                label="Confirm Password"
-                label-for="password_confirmation"
-              >
-                <validation-provider
-                  #default="{ errors }"
-                  name="password_confirmation"
-                  :rules="`${
-                    modelType == 'editModel' ? '' : 'required'
-                  }|confirmed:password`"
-                  vid="password_confirmation"
-                >
-                  <b-input-group
-                    class="input-group-merge"
-                    :class="errors.length > 0 ? 'is-invalid' : null"
-                  >
-                    <b-form-input
-                      id="password_confirmation"
-                      v-model="password_confirmation"
-                      :state="errors.length > 0 ? false : null"
-                      class="form-control-merge"
-                      :type="passwordFieldType"
-                      name="password_confirmation"
-                      placeholder="············"
-                    />
-                  </b-input-group>
-                  <small class="text-danger">{{ errors[0] }}</small>
-                </validation-provider>
-              </b-form-group>
-            </b-col>
+            
 
             <!-- submit and reset -->
             <b-col cols="12">
@@ -323,11 +191,13 @@ import {
   BModal,
   BPagination,
   BRow,
+  BFormFile,
+  BFormTextarea,
 } from 'bootstrap-vue'
 import { ValidationObserver, ValidationProvider } from 'vee-validate'
 import { VueGoodTable } from 'vue-good-table'
+import { quillEditor } from 'vue-quill-editor'
 import Ripple from 'vue-ripple-directive'
-
 import {
   USERS_ACCESS,
   USERS_CREATE,
@@ -362,6 +232,9 @@ export default {
     BModal,
     BInputGroupAppend,
     BInputGroup,
+    BFormFile,
+    BFormTextarea,
+    quillEditor,
   },
   directives: {
     Ripple,
@@ -373,6 +246,12 @@ export default {
       USERS_SHOW,
       USERS_EDIT,
       USERS_DELETE,
+
+      editorOption: {
+        modules: {
+          toolbar: '#toolbar',
+        },
+      },
 
       pageLength: 10,
       columns: [
@@ -404,6 +283,8 @@ export default {
         page: 1,
         perPage: 10,
       },
+
+      pixelCode: '',
     }
   },
 
@@ -443,11 +324,11 @@ export default {
   methods: {
     
     showModal() {
-      this.$bvModal.show('modal-users-form')
+      this.$bvModal.show('modal-fb-pixel-form')
     },
     hiddenModal() {
       this.modelType = ''
-      this.$bvModal.hide('modal-users-form')
+      this.$bvModal.hide('modal-fb-pixel-form')
       this.resetModal()
     },
     resetModal() {
@@ -590,12 +471,8 @@ export default {
                 },
               })
             } else {
-              await this.$api.post('/api/users', {
-                email: this.email,
-                status: this.selectStatusValue,
-                password: this.password,
-                password_confirmation: this.password_confirmation,
-                role_id: this.selectRoleId,
+              await this.$api.post('/api/fbPixels', {
+                pixel_code: this.pixelCode,
               })
 
               this.hiddenModal()

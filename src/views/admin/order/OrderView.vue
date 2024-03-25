@@ -134,7 +134,8 @@
       </template>
 
       <!-- table -->
-      <vue-good-table
+      <div style="max-height: 600px; overflow-y: auto;">
+        <vue-good-table
         :line-numbers="true"
         mode="remote"
         @on-selected-rows-change="selectionChanged"
@@ -279,7 +280,7 @@
               <span class="text-nowrap"> Showing 1 to </span>
               <b-form-select
                 v-model="pageLength"
-                :options="['10', '15', '20']"
+                :options="['10', '15', '20', '50', '80', '100', '200', '300']"
                 class="mx-1"
                 @input="
                   (value) => props.perPageChanged({ currentPerPage: value })
@@ -311,6 +312,8 @@
           </div>
         </template>
       </vue-good-table>
+      </div>
+      
     </div>
 
     <b-modal
@@ -984,6 +987,22 @@ export default {
     },
 
     async changeSelectedStatus(status) {
+
+      this.$swal({
+        title: "Warning!",
+        text: "Are You Sure You Want To Change This?",
+        icon: "warning",
+        customClass: {
+          confirmButton: "btn btn-primary",
+          cancelButton: "btn btn-outline-danger ml-1",
+        },buttonsStyling: false,
+        showCancelButton: true,
+        confirmButtonText: "Yes",
+        showLoaderOnConfirm: true,
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+
+
       const orderIds = (this.selectedRows || []).map((item) => {
         return item?.id
       })
@@ -1016,6 +1035,8 @@ export default {
           },
         })
       }
+    }
+  });
     },
 
     async generateInvoice(id) {
