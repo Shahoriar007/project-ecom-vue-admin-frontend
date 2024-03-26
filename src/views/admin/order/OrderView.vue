@@ -338,7 +338,14 @@
           </h4>
         </b-col>
       </b-row>
-      <br /><br />
+      
+      <hr>
+<!-- all order -->
+        <customer-all-order-status-vue
+        :customerId = "modalCustomerId"
+        ></customer-all-order-status-vue>
+      <hr>
+      
       <b-row>
         <b-col md="2" lg="2" xs="2">
           <h5 class="text-capitalize">Customer</h5>
@@ -391,17 +398,7 @@
           </template>
         </b-col>
 
-        <b-col md="2" lg="2" xs="2">
-          <h5 class="text-capitalize">Customer Status</h5>
-          <template>
-            <div>
-              
-            </div>
-
-          </template>
-        </b-col>
-
-
+       
 
 
 
@@ -530,6 +527,7 @@ import ToastificationContent from '@core/components/toastification/Toastificatio
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
 import { mapGetters } from 'vuex'
 import flatPickr from 'vue-flatpickr-component'
+import CustomerAllOrderStatusVue from '@/views/admin/customer/CustomerAllOrderStatus.vue'
 
 export default {
   mixins: [togglePasswordVisibility],
@@ -559,6 +557,7 @@ export default {
     BCardText,
     BLink,
     BFormTextarea,
+    CustomerAllOrderStatusVue,
   },
   directives: {
     Ripple,

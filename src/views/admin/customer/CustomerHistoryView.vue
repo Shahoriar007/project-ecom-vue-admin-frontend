@@ -62,114 +62,10 @@
       </b-row>
     </b-card>
 
-    <b-card>
-      <b-row>
-        <b-col md="2" lg="2" xs="2">
-            <h5 class="text-capitalize">Pending</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalPendingCount }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
-
-        <b-col md="2" lg="2" xs="2">
-            <h5 class="text-capitalize">Pending 1</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalPending1Count }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
-
-        <b-col md="2" lg="2" xs="2">
-            <h5 class="text-capitalize">Pending 2</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalPending2Count }}</b-card-text>
-              </div>
-            </template>
-
-          </b-col>
-
-          <b-col md="2" lg="2" xs="2">
-
-            <h5 class="text-capitalize">Processing</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalProcessingCount }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
-
-          <b-col md="2" lg="2" xs="2">
-            <h5 class="text-capitalize">Packing</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalPackagingCount }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
-
-          <b-col md="2" lg="2" xs="2">
-            <h5 class="text-capitalize">Shipping</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalShippingCount }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
-
-          <b-col md="2" lg="2" xs="2">
-            <h5 class="text-capitalize">On The Way</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalOnTheWayCount }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
-
-          <b-col md="2" lg="2" xs="2">
-            <h5 class="text-capitalize">In Review</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalInReviewCount }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
-
-        <b-col md="2" lg="2" xs="2">
-
-            <h5 class="text-capitalize">Cancel</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalCancelCount }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
-
-          <b-col md="2" lg="2" xs="2">
-
-            <h5 class="text-capitalize">Returned</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalReturnedCount }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
-
-          <b-col md="2" lg="2" xs="2">
-
-            <h5 class="text-capitalize">Delivered</h5>
-            <template>
-              <div>
-                <b-card-text>{{ totalDeliveredCount }}</b-card-text>
-              </div>
-            </template>
-          </b-col>
-      </b-row>
-
-    </b-card>
+    <!-- all order -->
+    <customer-all-order-status-vue
+    :customerId = "customerInfo?.id"
+    ></customer-all-order-status-vue>
 
     <b-card>
     
@@ -332,6 +228,7 @@ import {
 import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
 import { mapGetters } from 'vuex'
+import CustomerAllOrderStatusVue from '@/views/admin/customer/CustomerAllOrderStatus.vue'
 
 export default {
   mixins: [togglePasswordVisibility],
@@ -357,6 +254,7 @@ export default {
     BInputGroupAppend,
     BInputGroup,
     BCardText,
+    CustomerAllOrderStatusVue,
   },
   directives: {
     Ripple,
@@ -491,13 +389,15 @@ export default {
         }
       })
     } catch (error) {
+      console.log("error 1");
+
       this.$toast({
         component: ToastificationContent,
         props: {
           title: 'Error',
           icon: 'BellIcon',
           variant: 'danger',
-          text: error?.response?.data?.message,
+          text: "Error 1",
         },
       })
     }
@@ -582,13 +482,15 @@ export default {
           },
         })
       } catch (error) {
+        console.log("error 2");
+
         this.$toast({
           component: ToastificationContent,
           props: {
             title: 'Error',
             icon: 'BellIcon',
             variant: 'danger',
-            text: error?.response?.data?.message,
+            text: "Error 2",
           },
         })
       }
@@ -664,8 +566,6 @@ export default {
 
         const data = order?.data?.data;
 
-        console.log(data);
-
         const meta = order?.data?.meta;
 
         this.totalRecords = meta?.pagination?.total;
@@ -680,32 +580,16 @@ export default {
         this.customerInfo = data[0]?.customer;
 
 
-        const totalPurchaseAmount = await this.getTotalOrderAmount(this.$route.params.id);
-
-
-
-        this.totalPurchaseAmount = totalPurchaseAmount.data.totalOrderAmount;
-        this.totalPendingCount = totalPurchaseAmount.data.totalPendingCount;
-        this.totalPending1Count = totalPurchaseAmount.data.totalPending1Count;
-        this.totalPending2Count = totalPurchaseAmount.data.totalPending2Count;
-        this.totalProcessingCount = totalPurchaseAmount.data.totalProcessingCount;
-        this.totalPackagingCount = totalPurchaseAmount.data.totalPackagingCount;
-        this.totalShippingCount = totalPurchaseAmount.data.totalShippingCount;
-        this.totalOnTheWayCount = totalPurchaseAmount.data.totalOnTheWayCount;
-        this.totalInReviewCount = totalPurchaseAmount.data.totalInReviewCount;
-        this.totalCancelCount = totalPurchaseAmount.data.totalCancelledCount;
-        this.totalReturnedCount = totalPurchaseAmount.data.totalReturnedCount;
-        this.totalDeliveredCount = totalPurchaseAmount.data.totalDeliveredCount;
-
-
       } catch (error) {
+        console.log("error 3");
+
         this.$toast({
           component: ToastificationContent,
           props: {
             title: 'Error',
             icon: 'BellIcon',
             variant: 'danger',
-            text: error?.response?.data?.message,
+            text: "Error 3",
           },
         })
       }
@@ -760,17 +644,18 @@ export default {
               })
             }
           } catch (error) {
-            if (error?.response?.data?.message) {
+            // if (error?.response?.data?.message) {
+              console.log("error 4");
               this.$toast({
                 component: ToastificationContent,
                 props: {
                   title: 'Error',
                   icon: 'BellIcon',
                   variant: 'danger',
-                  text: error?.response?.data?.message,
+                  text: "Error 4",
                 },
               })
-            }
+            // }
 
             if (error?.response?.data?.errors) {
               this.$refs.usersValidation.setErrors(
