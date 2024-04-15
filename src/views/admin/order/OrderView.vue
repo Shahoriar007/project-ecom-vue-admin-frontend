@@ -188,7 +188,10 @@
             
             <div style="display: block">
               <b-link v-on:click="showModal(props.row.id)">
-                <strong>ID: </strong> <span>{{ props.row.id }}</span> <span v-if="props.row.comment" style="color: red;">*</span>
+                <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">✔️</span> 
+                <strong>ID: </strong> 
+                <span>{{ props.row.large_order_id }}</span> 
+                <span v-if="props.row.comment" style="color: red;">*</span>
               </b-link>
             </div>
 
@@ -202,9 +205,21 @@
             </div> -->
           </span>
           <!-- Column: head -->
-          <span v-if="props.column.field === 'name'">
-            <!-- {{ props.row. }} -->
-            name
+          <span v-if="props.column.field === 'format_customer'">
+            <div style="display: block">
+                <strong>Name: </strong> <span>{{ props.row.customer.first_name }}</span> <span v-if="props.row.comment" style="color: red;">*</span>
+            </div>
+            <div style="display: block">
+              <strong>Phone: </strong> 
+              <span>
+                <b-link :href="'https://wa.me/' + props.row.customer.phone" target="_blank">
+                  <b-badge variant="light-success">
+                    {{ props.row.customer.phone }}
+                  </b-badge>
+                  </b-link>
+              </span> 
+              <span v-if="props.row.comment" style="color: red;">*</span>
+            </div>
           </span>
 
           <!-- Column: Status -->
@@ -659,8 +674,8 @@ export default {
           sortable: false,
         },
         {
-          label: 'Customer Name',
-          field: 'customer.full_name',
+          label: 'Customer',
+          field: 'format_customer',
           sortable: false,
         },
         // {
@@ -897,7 +912,7 @@ export default {
         .then((response) => {
           console.log(response.data.data)
 
-          this.modalOrderId = response.data.data.id
+          this.modalOrderId = response.data.data.large_order_id
           this.modalCustomerName = response.data.data.customer.full_name
           this.modalOrderStatus = response.data.data.status
           this.modalCustomerStatus = response.data.data.customer.is_band
@@ -988,6 +1003,8 @@ export default {
             text: 'Sticker Generated',
           },
         })
+
+        this.loadItems();
       } catch (error) {
         if (error?.response?.data?.message) {
           this.$toast({

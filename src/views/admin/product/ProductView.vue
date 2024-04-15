@@ -822,6 +822,8 @@ export default {
         {
           label: 'Name',
           field: 'name_format',
+          sortable: false,
+
         },
         {
           label: 'Description',
@@ -847,7 +849,8 @@ export default {
           label: 'Created On',
           field: 'created_at',
           formatFn: this.formatFnTableLastContactDate,
-          sortable: true,
+          // sortable: true,
+          sortable: false,
         },
         {
           label: 'Action',
