@@ -2,7 +2,7 @@
   <b-card>
     <div>
       <b-row>
-        <b-col md="10">
+        <b-col md="9">
           <!-- search input -->
           <div class="custom-search align-items-center">
             <div
@@ -28,6 +28,18 @@
             />
           </b-form-group>
         </b-col>
+        <b-col md="1">
+          <b-button
+            v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+            type="submit"
+            variant="primary"
+            class="mr-1"
+            @click="clearFilter"
+          >
+            Clear
+          </b-button>
+        </b-col>  
+
       </b-row>
       <!-- filter -->
       <template>
@@ -755,6 +767,12 @@ export default {
   },
 
   methods: {
+
+    clearFilter() {
+      this.filterStatus = ''
+      this.rangeDate = null
+      this.loadItems()
+    },
 
     async bandActiveCustomer() {
       try {

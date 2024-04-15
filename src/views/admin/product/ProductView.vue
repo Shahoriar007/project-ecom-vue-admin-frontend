@@ -54,12 +54,14 @@
       >
         <template slot="table-row" slot-scope="props">
           <!-- Column: head -->
-          <span v-if="props.column.field === 'name'">
+          <span v-if="props.column.field === 'name_format'">
             <b-avatar
               v-if="props?.row?.large_pictures"
               :src="props?.row?.large_pictures[0]?.original_url"
               class="mr-1"
             />
+
+            {{ truncateName(props.row?.name) }}
           </span>
 
           <!-- Column: Status -->
@@ -819,7 +821,7 @@ export default {
       columns: [
         {
           label: 'Name',
-          field: 'name',
+          field: 'name_format',
         },
         {
           label: 'Description',
@@ -925,6 +927,16 @@ export default {
   },
 
   methods: {
+    truncateName(name) {
+      if (!name) return '';
+      const words = name.split(' ');
+      if (words.length > 2) {
+        return words.slice(0, 2).join(' ') + '...';
+      } else {
+        return name;
+      }
+    },
+    
     filterChildCategories() {
       // childCategoryOptions
       console.log(this.subCategoryOptions)
