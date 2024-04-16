@@ -54,12 +54,14 @@
       >
         <template slot="table-row" slot-scope="props">
           <!-- Column: head -->
-          <span v-if="props.column.field === 'name'">
+          <span v-if="props.column.field === 'name_format'">
             <b-avatar
               v-if="props?.row?.large_pictures"
               :src="props?.row?.large_pictures[0]?.original_url"
               class="mr-1"
             />
+
+            {{ truncateName(props.row?.name) }}
           </span>
 
           <!-- Column: Status -->
@@ -135,7 +137,7 @@
               <span class="text-nowrap"> Showing 1 to </span>
               <b-form-select
                 v-model="pageLength"
-                :options="['10', '15', '20']"
+                :options="['10', '15', '20', '50', '100', '200', '300']"
                 class="mx-1"
                 @input="
                   (value) => props.perPageChanged({ currentPerPage: value })
@@ -231,7 +233,27 @@
                 <img :src="previewImage" alt="Preview" />
               </div>
             </b-col>
-            <b-col md="12" lg="12" xs="12">
+            <b-col md="2" lg="2" xs="12" v-if="modalType == 'editModal'">
+              <b-form-group label="Priority" label-for="priority">
+                <validation-provider
+                  #default="{ errors }"
+                  name="priority"
+                  vid="priority"
+                >
+                  <b-form-input
+                    id="priority"
+                    type="number"
+                    v-model="priorityNumber"
+                    :state="errors.length > 0 ? false : null"
+                    name="priority"
+                    placeholder="Product Priority"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </validation-provider>
+              </b-form-group>
+            </b-col>
+
+            <b-col md="10" lg="10" xs="12">
               <b-form-group label="Image" label-for="large_pictures">
                 <validation-provider
                   #default="{ errors }"
@@ -283,7 +305,7 @@
                 </validation-provider>
               </b-form-group>
             </b-col>
-            <b-col md="6" lg="6" xs="12">
+            <b-col md="2" lg="2" xs="12">
               <b-form-group label="Status" label-for="status">
                 <ValidationProvider
                   name="status"
@@ -299,6 +321,25 @@
                   />
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
+              </b-form-group>
+            </b-col>
+            <b-col md="4" lg="4" xs="12">
+              <b-form-group label="Video Link" label-for="video_link">
+                <validation-provider
+                  #default="{ errors }"
+                  name="video_link"
+                  vid="video_link"
+                >
+                  <b-form-input
+                    id="video_link"
+                    type="text"
+                    v-model="videoLink"
+                    :state="errors.length > 0 ? false : null"
+                    name="video_link"
+                    placeholder="Product video link"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </validation-provider>
               </b-form-group>
             </b-col>
             <b-col md="12" lg="12" xs="12">
@@ -798,6 +839,8 @@ export default {
           value: false,
         },
       ],
+      videoLink: '',
+      priorityNumber: '',
       categoryOptions: [],
       categoryId: '',
       filteredSubCategoryOptions: [],
@@ -819,7 +862,15 @@ export default {
       columns: [
         {
           label: 'Name',
-          field: 'name',
+          field: 'name_format',
+          sortable: false,
+
+        },
+        {
+          label: 'Priority',
+          field: 'priority',
+          sortable: false,
+
         },
         {
           label: 'Description',
@@ -845,7 +896,8 @@ export default {
           label: 'Created On',
           field: 'created_at',
           formatFn: this.formatFnTableLastContactDate,
-          sortable: true,
+          // sortable: true,
+          sortable: false,
         },
         {
           label: 'Action',
@@ -925,6 +977,16 @@ export default {
   },
 
   methods: {
+    truncateName(name) {
+      if (!name) return '';
+      const words = name.split(' ');
+      if (words.length > 2) {
+        return words.slice(0, 2).join(' ') + '...';
+      } else {
+        return name;
+      }
+    },
+    
     filterChildCategories() {
       // childCategoryOptions
       console.log(this.subCategoryOptions)
@@ -1066,10 +1128,11 @@ export default {
       this.removeUploadImage = false
       this.filteredSubCategoryOptions = []
       this.filteredChildCategoryOptions = []
+      this.priorityNumber = ''
+      this.videoLink = ''
     },
     async onShow(value) {
       this.modalType = 'editModal'
-      console.log(value)
       this.id = value?.id
       this.name = value?.name
       this.description = value?.short_description
@@ -1097,6 +1160,8 @@ export default {
       this.isNew = value?.is_new
       this.isHot = value?.is_hot
       this.isForYou = value?.is_for_you
+      this.priorityNumber = value?.priority
+      this.videoLink = value?.video_link
       this.selectLabels = value?.labels?.map((item) => {
         return item?.name
       })
@@ -1231,6 +1296,12 @@ export default {
               formData.append('status', 1)
             } else {
               formData.append('status', 0)
+            }
+            if (this.videoLink) {
+              formData.append('video_link', this.videoLink)
+            }
+            if (this.priorityNumber) {
+              formData.append('priority', this.priorityNumber)
             }
 
             if (this.skuCode) {

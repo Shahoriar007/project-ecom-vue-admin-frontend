@@ -2,7 +2,7 @@
   <b-card>
     <div>
       <b-row>
-        <b-col md="10">
+        <b-col md="9">
           <!-- search input -->
           <div class="custom-search align-items-center">
             <div
@@ -28,6 +28,18 @@
             />
           </b-form-group>
         </b-col>
+        <b-col md="1">
+          <b-button
+            v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+            type="submit"
+            variant="primary"
+            class="mr-1"
+            @click="clearFilter"
+          >
+            Clear
+          </b-button>
+        </b-col>  
+
       </b-row>
       <!-- filter -->
       <template>
@@ -176,7 +188,10 @@
             
             <div style="display: block">
               <b-link v-on:click="showModal(props.row.id)">
-                <strong>ID: </strong> <span>{{ props.row.id }}</span> <span v-if="props.row.comment" style="color: red;">*</span>
+                <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">✔️</span> 
+                <strong>ID: </strong> 
+                <span>{{ props.row.large_order_id }}</span> 
+                <span v-if="props.row.comment" style="color: red;">*</span>
               </b-link>
             </div>
 
@@ -190,9 +205,21 @@
             </div> -->
           </span>
           <!-- Column: head -->
-          <span v-if="props.column.field === 'name'">
-            <!-- {{ props.row. }} -->
-            name
+          <span v-if="props.column.field === 'format_customer'">
+            <div style="display: block">
+                <strong>Name: </strong> <span>{{ props.row.customer.first_name }}</span> <span v-if="props.row.comment" style="color: red;">*</span>
+            </div>
+            <div style="display: block">
+              <strong>Phone: </strong> 
+              <span>
+                <b-link :href="'https://wa.me/' + props.row.customer.phone" target="_blank">
+                  <b-badge variant="light-success">
+                    {{ props.row.customer.phone }}
+                  </b-badge>
+                  </b-link>
+              </span> 
+              <span v-if="props.row.comment" style="color: red;">*</span>
+            </div>
           </span>
 
           <!-- Column: Status -->
@@ -456,18 +483,32 @@
       id="order-comment-modal"
       centered
       size="lg"
-      title="Followup Comment"
+      title="Followup"
       hide-footer
       @hidden="hiddenOrderCommentModal"
       no-close-on-backdrop
     >
+    <div class="scrollable">
+
+   
+        <b-col md="12" lg="12" xs="12" v-for="followUpMsg in followUpMsgs" :key="followUpMsg.id" >
+            <h5 class="text-capitalize" v-if="$permissionAbility(USERS_DELETE, permissions)" >{{ followUpMsg.user.name }}</h5>
+            <div>
+              <b-card-text>{{ followUpMsg.msg }}</b-card-text>
+            </div>
+            <h6 class="text-capitalize">{{ formatFnTableLastContactDate(followUpMsg.created_at) }}</h6>
+            <hr>
+        </b-col>
+        
+        <br><br><br>
+
       <b-row>
         <b-col md="12" lg="12" xs="12">
           <b-form-textarea
             id="address"
             type="text"
             v-model="followupComment"
-            placeholder="Followup Comment"
+            placeholder="Followup"
             rows="3"
           />
         </b-col>
@@ -482,8 +523,10 @@
               >
                 Submit
               </b-button>
-            </b-col>
+        </b-col>
       </b-row>
+
+    </div>
     </b-modal>
   </b-card>
 </template>
@@ -595,6 +638,8 @@ export default {
       followupComment: '',
       commentModalOrderId: '',
 
+      followUpMsgs: [],
+
       filterStatus: '',
       optionsRadio: [
         { text: 'All', value: 'all' },
@@ -647,8 +692,8 @@ export default {
           sortable: false,
         },
         {
-          label: 'Customer Name',
-          field: 'customer.full_name',
+          label: 'Customer',
+          field: 'format_customer',
           sortable: false,
         },
         // {
@@ -756,6 +801,12 @@ export default {
 
   methods: {
 
+    clearFilter() {
+      this.filterStatus = ''
+      this.rangeDate = null
+      this.loadItems()
+    },
+
     async bandActiveCustomer() {
       try {
         await this.$api.get(`api/customer/band-active/${this.modalCustomerId}`)
@@ -789,9 +840,9 @@ export default {
     async submitFollowupComment() {
 
       try {
-        const response = await this.$api.post(`api/update-comment`, {
-          id: this.commentModalOrderId,
-          comment: this.followupComment,
+        const response = await this.$api.post(`api/update-follow-up`, {
+          order_id: this.commentModalOrderId,
+          msg: this.followupComment,
         });
 
         this.$toast({
@@ -800,7 +851,7 @@ export default {
             title: "Success",
             icon: "CheckIcon",
             variant: "success",
-            text: "Comment Updated",
+            text: "Successfully Updated",
           },
         });
 
@@ -873,13 +924,17 @@ export default {
       return await this.$api.get(`api/orders/details/${id}`)
     },
 
+    async getFollowUpMsg(id) {
+      return await this.$api.get(`api/followUp/msg/${id}?=user`)
+    },
+
     // show order details modal
     async showModal(id) {
       await this.getOrderDetails(id)
         .then((response) => {
           console.log(response.data.data)
 
-          this.modalOrderId = response.data.data.id
+          this.modalOrderId = response.data.data.large_order_id
           this.modalCustomerName = response.data.data.customer.full_name
           this.modalOrderStatus = response.data.data.status
           this.modalCustomerStatus = response.data.data.customer.is_band
@@ -904,9 +959,11 @@ export default {
     async showOrderCommentModal(id) {
       this.commentModalOrderId = id;
 
-      await this.getOrderDetails(id)
+      await this.getFollowUpMsg(id)
         .then((response) => {
-          this.followupComment = response.data.data.comment
+          this.followUpMsgs = response?.data?.follow_ups || [];
+
+          console.log(this.followUpMsgs);
           this.$bvModal.show('order-comment-modal')
         })
         .catch((error) => {
@@ -970,6 +1027,8 @@ export default {
             text: 'Sticker Generated',
           },
         })
+
+        this.loadItems();
       } catch (error) {
         if (error?.response?.data?.message) {
           this.$toast({
@@ -1300,5 +1359,11 @@ export default {
   width: 500px;
   height: 500px;
   z-index: 9999;
+}
+
+.scrollable {
+  max-height: 500px; /* Adjust as needed */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 </style>
