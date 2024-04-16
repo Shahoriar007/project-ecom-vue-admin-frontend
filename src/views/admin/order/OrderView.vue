@@ -483,18 +483,32 @@
       id="order-comment-modal"
       centered
       size="lg"
-      title="Followup Comment"
+      title="Followup"
       hide-footer
       @hidden="hiddenOrderCommentModal"
       no-close-on-backdrop
     >
+    <div class="scrollable">
+
+   
+        <b-col md="12" lg="12" xs="12" v-for="followUpMsg in followUpMsgs" :key="followUpMsg.id" >
+            <h5 class="text-capitalize" v-if="$permissionAbility(USERS_DELETE, permissions)" >{{ followUpMsg.user.name }}</h5>
+            <div>
+              <b-card-text>{{ followUpMsg.msg }}</b-card-text>
+            </div>
+            <h6 class="text-capitalize">{{ formatFnTableLastContactDate(followUpMsg.created_at) }}</h6>
+            <hr>
+        </b-col>
+        
+        <br><br><br>
+
       <b-row>
         <b-col md="12" lg="12" xs="12">
           <b-form-textarea
             id="address"
             type="text"
             v-model="followupComment"
-            placeholder="Followup Comment"
+            placeholder="Followup"
             rows="3"
           />
         </b-col>
@@ -509,8 +523,10 @@
               >
                 Submit
               </b-button>
-            </b-col>
+        </b-col>
       </b-row>
+
+    </div>
     </b-modal>
   </b-card>
 </template>
@@ -621,6 +637,8 @@ export default {
       orderComment: '',
       followupComment: '',
       commentModalOrderId: '',
+
+      followUpMsgs: [],
 
       filterStatus: '',
       optionsRadio: [
@@ -822,9 +840,9 @@ export default {
     async submitFollowupComment() {
 
       try {
-        const response = await this.$api.post(`api/update-comment`, {
-          id: this.commentModalOrderId,
-          comment: this.followupComment,
+        const response = await this.$api.post(`api/update-follow-up`, {
+          order_id: this.commentModalOrderId,
+          msg: this.followupComment,
         });
 
         this.$toast({
@@ -833,7 +851,7 @@ export default {
             title: "Success",
             icon: "CheckIcon",
             variant: "success",
-            text: "Comment Updated",
+            text: "Successfully Updated",
           },
         });
 
@@ -906,6 +924,10 @@ export default {
       return await this.$api.get(`api/orders/details/${id}`)
     },
 
+    async getFollowUpMsg(id) {
+      return await this.$api.get(`api/followUp/msg/${id}?=user`)
+    },
+
     // show order details modal
     async showModal(id) {
       await this.getOrderDetails(id)
@@ -937,9 +959,11 @@ export default {
     async showOrderCommentModal(id) {
       this.commentModalOrderId = id;
 
-      await this.getOrderDetails(id)
+      await this.getFollowUpMsg(id)
         .then((response) => {
-          this.followupComment = response.data.data.comment
+          this.followUpMsgs = response?.data?.follow_ups || [];
+
+          console.log(this.followUpMsgs);
           this.$bvModal.show('order-comment-modal')
         })
         .catch((error) => {
@@ -1335,5 +1359,11 @@ export default {
   width: 500px;
   height: 500px;
   z-index: 9999;
+}
+
+.scrollable {
+  max-height: 500px; /* Adjust as needed */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 </style>
