@@ -368,9 +368,12 @@
       
       <hr>
 <!-- all order -->
-        <customer-all-order-status-vue
-        :customerId = "modalCustomerId"
-        ></customer-all-order-status-vue>
+<template v-if="modalCustomerId">
+  <customer-all-order-status-vue
+  :customerId = "modalCustomerId"
+  ></customer-all-order-status-vue>
+</template>
+        
       <hr>
       
       <b-row>

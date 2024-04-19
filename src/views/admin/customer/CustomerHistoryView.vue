@@ -63,9 +63,12 @@
     </b-card>
 
     <!-- all order -->
-    <customer-all-order-status-vue
-    :customerId = "customerInfo?.id"
-    ></customer-all-order-status-vue>
+    <template v-if="customerInfo?.id">
+      <customer-all-order-status-vue
+      :customerId = "customerInfo?.id"
+      ></customer-all-order-status-vue>
+    </template>
+    
 
     <b-card>
     
@@ -99,7 +102,7 @@
         <template slot="table-row" slot-scope="props">
           <!-- Column: head -->
           <span v-if="props.column.field === 'format_id'">
-            <strong>ID : </strong>{{ props.row.id }}
+            <strong>ID : </strong>{{ props.row.large_order_id }}
           </span>
 
           <!-- Column: Status -->
@@ -573,12 +576,11 @@ export default {
         this.rows = data;
 
          // i want sum of total purchase amount from data.total_price
-        //  this.totalPurchaseAmount = data.reduce((acc, item) => {
-        //   return acc + Number(item.total_price)
-        // }, 0) 
+         this.totalPurchaseAmount = data.reduce((acc, item) => {
+          return acc + Number(item.total_price)
+        }, 0) 
 
         this.customerInfo = data[0]?.customer;
-
 
       } catch (error) {
         console.log("error 3");
