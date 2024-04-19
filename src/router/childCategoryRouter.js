@@ -1,20 +1,20 @@
-
-import { CATEGORIES_ACCESS } from "@/helpers/permissionsConstant";
+import { CHILD_CATEGORIES_ACCESS } from '@/helpers/permissionsConstant'
 export default [
   {
-    path: "/admin/child-categories",
-    name: "admin-child-categories",
-    component: () => import("@/views/admin/child_category/ChildCategoryView.vue"),
+    path: '/admin/child-categories',
+    name: 'admin-child-categories',
+    component: () =>
+      import('@/views/admin/child_category/ChildCategoryView.vue'),
     meta: {
-      gate: CATEGORIES_ACCESS,
+      gate: CHILD_CATEGORIES_ACCESS,
       requiresAuth: true,
-      pageTitle: "Child Category",
-      homePatch: "/admin/dashboard",
+      pageTitle: 'Child Category',
+      homePatch: '/admin/dashboard',
       breadcrumb: [
         {
-          text: "Child Categories",
+          text: 'Child Categories',
           active: true,
-          to: "",
+          to: '',
         },
       ],
     },

@@ -13,7 +13,7 @@
             type="text"
             class="d-inline-block mr-sm-1 mb-1 mb-sm-0"
           />
-          <template v-if="$permissionAbility(CATEGORIES_CREATE, permissions)">
+          <template v-if="$permissionAbility(CHILD_CATEGORIES_CREATE, permissions)">
             <b-button
               class="flex-shrink-0"
               v-ripple.400="'rgba(255, 255, 255, 0.15)'"
@@ -89,7 +89,7 @@
                   />
                 </template>
                 <template
-                  v-if="$permissionAbility(CATEGORIES_EDIT, permissions)"
+                  v-if="$permissionAbility(CHILD_CATEGORIES_EDIT, permissions)"
                 >
                   <b-dropdown-item v-on:click="onShow(props.row)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
@@ -98,7 +98,7 @@
                 </template>
 
                 <template
-                  v-if="$permissionAbility(CATEGORIES_DELETE, permissions)"
+                  v-if="$permissionAbility(CHILD_CATEGORIES_DELETE, permissions)"
                 >
                   <b-dropdown-item v-on:click="onDelete(props.row.id)">
                     <feather-icon icon="TrashIcon" class="mr-50" />
@@ -321,10 +321,10 @@
 
 <script>
 import {
-  CATEGORIES_CREATE,
-  CATEGORIES_DELETE,
-  CATEGORIES_EDIT,
-  CATEGORIES_SHOW,
+  CHILD_CATEGORIES_CREATE,
+  CHILD_CATEGORIES_DELETE,
+  CHILD_CATEGORIES_EDIT,
+  CHILD_CATEGORIES_SHOW,
 } from '@/helpers/permissionsConstant'
 import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import {
@@ -381,10 +381,10 @@ export default {
   },
   data() {
     return {
-      CATEGORIES_SHOW,
-      CATEGORIES_CREATE,
-      CATEGORIES_EDIT,
-      CATEGORIES_DELETE,
+      CHILD_CATEGORIES_SHOW,
+      CHILD_CATEGORIES_CREATE,
+      CHILD_CATEGORIES_EDIT,
+      CHILD_CATEGORIES_DELETE,
       modalType: '',
       previewImage: 'https://placehold.co/200x200?text=Upload+Image',
       id: '',

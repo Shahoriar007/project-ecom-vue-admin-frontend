@@ -52,7 +52,7 @@
             </div>
           </b-col>
 
-          <template v-if="isRowChecked">
+          <template v-if="isRowChecked && $permissionAbility(ORDERS_STATUS_CHANGE, permissions)">
             <b-col md="1">
               <b-dropdown
                 id="dropdown-1"
@@ -187,12 +187,22 @@
           <span v-if="props.column.field === 'format_order'">
             
             <div style="display: block">
-              <b-link v-on:click="showModal(props.row.id)">
-                <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">✔️</span> 
-                <strong>ID: </strong> 
-                <span>{{ props.row.large_order_id }}</span> 
-                <span v-if="props.row.comment" style="color: red;">*</span>
-              </b-link>
+              <template v-if="$permissionAbility(ORDERS_SHOW, permissions)">
+                <b-link v-on:click="showModal(props.row.id)">
+                  <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">✔️</span> 
+                  <strong>ID: </strong> 
+                  <span>{{ props.row.large_order_id }}</span> 
+                  <span v-if="props.row.comment" style="color: red;">*</span>
+                </b-link>
+              </template>
+
+              <template v-else>
+                  <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">✔️</span> 
+                  <strong>ID: </strong> 
+                  <span>{{ props.row.large_order_id }}</span> 
+                  <span v-if="props.row.comment" style="color: red;">*</span>
+              </template>
+              
             </div>
 
             <div style="display: block">
@@ -264,11 +274,11 @@
                   />
                 </template>
                 <template>
-                  <b-dropdown-item v-on:click="onView(props.row.id)">
+                  <b-dropdown-item v-if="$permissionAbility(ORDERS_SHOW, permissions)" v-on:click="onView(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
                   </b-dropdown-item>
-                  <b-dropdown-item v-on:click="showModal(props.row.id)">
+                  <b-dropdown-item v-if="$permissionAbility(ORDERS_SHOW, permissions)" v-on:click="showModal(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View Here</span>
                   </b-dropdown-item>
@@ -284,12 +294,7 @@
                   </b-dropdown-item> -->
                 </template>
 
-                <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">
-                  <b-dropdown-item v-on:click="onDelete(props.row.id)">
-                    <feather-icon icon="TrashIcon" class="mr-50" />
-                    <span>Delete</span>
-                  </b-dropdown-item>
-                </template> -->
+                
               </b-dropdown>
             </span>
           </span>
@@ -406,7 +411,7 @@
             </div>
           </template>
 
-          <template>
+          <template v-if="$permissionAbility(CUSTOMERS_BLOCK, permissions)">
             <br>
           <h5 class="text-capitalize">Customer Status Change</h5>
             <div>
@@ -495,7 +500,7 @@
 
    
         <b-col md="12" lg="12" xs="12" v-for="followUpMsg in followUpMsgs" :key="followUpMsg.id" >
-            <h5 class="text-capitalize" v-if="$permissionAbility(USERS_DELETE, permissions)" >{{ followUpMsg.user.name }}</h5>
+            <h5 class="text-capitalize" v-if="$permissionAbility(ORDERS_FOLLOW_UP_NAME_SHOW, permissions)" >{{ followUpMsg.user.name }}</h5>
             <div>
               <b-card-text>{{ followUpMsg.msg }}</b-card-text>
             </div>
@@ -563,11 +568,10 @@ import { VueGoodTable } from 'vue-good-table'
 import Ripple from 'vue-ripple-directive'
 
 import {
-  USERS_ACCESS,
-  USERS_CREATE,
-  USERS_DELETE,
-  USERS_EDIT,
-  USERS_SHOW,
+  ORDERS_FOLLOW_UP_NAME_SHOW,
+  ORDERS_SHOW,
+  ORDERS_STATUS_CHANGE,
+  CUSTOMERS_BLOCK,
 } from '@/helpers/permissionsConstant'
 import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
@@ -610,11 +614,11 @@ export default {
   },
   data() {
     return {
-      USERS_ACCESS,
-      USERS_CREATE,
-      USERS_SHOW,
-      USERS_EDIT,
-      USERS_DELETE,
+      ORDERS_FOLLOW_UP_NAME_SHOW,
+      ORDERS_SHOW,
+      ORDERS_STATUS_CHANGE,
+      CUSTOMERS_BLOCK,
+
       userId: '',
       name: '',
       password: '',

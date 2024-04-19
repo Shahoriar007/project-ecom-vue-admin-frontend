@@ -6,7 +6,7 @@
         <div
           class="d-flex flex-column flex-sm-row align-items-center mb-1 justify-content-around"
         >
-          <template v-if="$permissionAbility(USERS_CREATE, permissions)">
+          <template v-if="$permissionAbility(FB_PIXEL_CREATE, permissions)">
             <b-button
               class="flex-shrink-0"
               v-ripple.400="'rgba(255, 255, 255, 0.15)'"
@@ -63,7 +63,7 @@
                 </template>
                 
 
-                <template v-if="$permissionAbility(USERS_DELETE, permissions)">
+                <template v-if="$permissionAbility(FB_PIXEL_DELETE, permissions)">
                   <b-dropdown-item v-on:click="onDelete(props.row.id)">
                     <feather-icon icon="TrashIcon" class="mr-50" />
                     <span>Delete</span>
@@ -199,11 +199,10 @@ import { VueGoodTable } from 'vue-good-table'
 import { quillEditor } from 'vue-quill-editor'
 import Ripple from 'vue-ripple-directive'
 import {
-  USERS_ACCESS,
-  USERS_CREATE,
-  USERS_DELETE,
-  USERS_EDIT,
-  USERS_SHOW,
+  FB_PIXEL_ACCESS,
+  FB_PIXEL_CREATE,
+  FB_PIXEL_DELETE,
+  
 } from '@/helpers/permissionsConstant'
 import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
@@ -241,11 +240,9 @@ export default {
   },
   data() {
     return {
-      USERS_ACCESS,
-      USERS_CREATE,
-      USERS_SHOW,
-      USERS_EDIT,
-      USERS_DELETE,
+      FB_PIXEL_ACCESS,
+      FB_PIXEL_CREATE,
+      FB_PIXEL_DELETE,
 
       editorOption: {
         modules: {

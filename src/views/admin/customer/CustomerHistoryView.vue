@@ -128,18 +128,12 @@
                   />
                 </template>
                 <template>
-                  <b-dropdown-item v-on:click="onView(props.row.id)">
+                  <b-dropdown-item v-if="$permissionAbility(ORDERS_SHOW, permissions)" v-on:click="onView(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
                   </b-dropdown-item>
                 </template>
 
-                <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">
-                  <b-dropdown-item v-on:click="onDelete(props.row.id)">
-                    <feather-icon icon="TrashIcon" class="mr-50" />
-                    <span>Delete</span>
-                  </b-dropdown-item>
-                </template> -->
               </b-dropdown>
             </span>
           </span>
@@ -222,11 +216,7 @@ import { VueGoodTable } from 'vue-good-table'
 import Ripple from 'vue-ripple-directive'
 
 import {
-  USERS_ACCESS,
-  USERS_CREATE,
-  USERS_DELETE,
-  USERS_EDIT,
-  USERS_SHOW,
+  ORDERS_SHOW,
 } from '@/helpers/permissionsConstant'
 import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
@@ -264,11 +254,8 @@ export default {
   },
   data() {
     return {
-      USERS_ACCESS,
-      USERS_CREATE,
-      USERS_SHOW,
-      USERS_EDIT,
-      USERS_DELETE,
+      ORDERS_SHOW,
+
       modelType: '',
       userId: '',
       name: '',
