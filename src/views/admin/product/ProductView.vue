@@ -233,7 +233,7 @@
                 <img :src="previewImage" alt="Preview" />
               </div>
             </b-col>
-            <b-col md="2" lg="2" xs="12" v-if="modalType == 'editModal'">
+            <b-col md="2" lg="2" xs="12">
               <b-form-group label="Priority" label-for="priority">
                 <validation-provider
                   #default="{ errors }"
