@@ -801,7 +801,6 @@ export default {
       this.loadItems()
     },
     rangeDate: function (newVal, oldVal) {
-      console.log(newVal, oldVal)
       this.loadItems()
     },
   },
@@ -809,7 +808,7 @@ export default {
   methods: {
 
     clearFilter() {
-      this.filterStatus = ''
+      this.searchTerm = ''
       this.rangeDate = null
       this.loadItems()
     },
@@ -909,7 +908,6 @@ export default {
       } else {
         this.isRowChecked = true
         this.selectedRows = params?.selectedRows
-        console.log(this.selectedRows)
       }
     },
     formatFnTableLastContactDate(value) {
@@ -939,7 +937,6 @@ export default {
     async showModal(id) {
       await this.getOrderDetails(id)
         .then((response) => {
-          console.log(response.data.data)
 
           this.modalOrderId = response.data.data.large_order_id
           this.modalCustomerName = response.data.data.customer.full_name
@@ -955,7 +952,15 @@ export default {
           this.$bvModal.show('modal-order-details')
         })
         .catch((error) => {
-          console.log(error)
+          this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Error',
+            icon: 'BellIcon',
+            variant: 'danger',
+            text: error?.response?.data?.message,
+          },
+        })
         })
     },
     hiddenModal(id) {
@@ -970,11 +975,18 @@ export default {
         .then((response) => {
           this.followUpMsgs = response?.data?.follow_ups || [];
 
-          console.log(this.followUpMsgs);
           this.$bvModal.show('order-comment-modal')
         })
         .catch((error) => {
-          console.log(error)
+          this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Error',
+            icon: 'BellIcon',
+            variant: 'danger',
+            text: error?.response?.data?.message,
+          },
+          })
         })
       this.$bvModal.show('order-comment-modal')
     },
@@ -1140,7 +1152,6 @@ export default {
     },
 
     async onShow(value) {
-      //   console.log("onShow", value);
       this.modelType = 'editModel'
       this.userId = value?.id
       this.name = value?.name
