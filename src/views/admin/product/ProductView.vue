@@ -120,6 +120,14 @@
                     <span>Delete</span>
                   </b-dropdown-item>
                 </template>
+
+                <template
+                >
+                  <b-dropdown-item v-on:click="onCopy(props.row)">
+                    <feather-icon icon="Edit2Icon" class="mr-50" />
+                    <span>Copy</span>
+                  </b-dropdown-item>
+                </template>
               </b-dropdown>
             </span>
           </span>
@@ -977,6 +985,10 @@ export default {
   },
 
   methods: {
+    //copy product
+    onCopy(value) {
+      this.onCopyModal(value);
+    },
     truncateName(name) {
       if (!name) return '';
       const words = name.split(' ');
@@ -1171,6 +1183,33 @@ export default {
       //     name: item?.name,
       //   }
       // })
+
+      this.showModal()
+    },
+
+    async onCopyModal(value) {
+      this.id = value?.id
+      this.name = value?.name
+      this.description = value?.short_description
+      this.offerNotice = value?.offer_notice
+      this.status = value?.status
+      this.categoryId = value?.category_id
+      this.subCategoryId = value?.sub_category_id
+      this.childCategoryId = value?.child_category_id
+      this.skuCode = value?.sku
+      this.quantity = value?.stock
+      this.price = value?.price
+      this.salePrice = value?.sale_price
+      this.isSale = value?.is_sale
+      this.isNew = value?.is_new
+      this.isHot = value?.is_hot
+      this.isForYou = value?.is_for_you
+      this.priorityNumber = value?.priority
+      this.videoLink = value?.video_link
+      this.selectLabels = value?.labels?.map((item) => {
+        return item?.name
+      })
+      
 
       this.showModal()
     },
