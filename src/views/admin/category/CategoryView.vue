@@ -227,6 +227,26 @@
               </b-form-group>
             </b-col>
 
+            <b-col xs="12">
+              <b-form-group label="Priority" label-for="priority">
+                <validation-provider
+                  #default="{ errors }"
+                  name="priority"
+                  vid="priority"
+                >
+                  <b-form-input
+                    id="priority"
+                    type="number"
+                    v-model="priorityNumber"
+                    :state="errors.length > 0 ? false : null"
+                    name="priority"
+                    placeholder="Product Priority"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </validation-provider>
+              </b-form-group>
+            </b-col>
+
             <b-col cols="12">
               <b-form-group label="Description" label-for="description">
                 <ValidationProvider
@@ -371,6 +391,7 @@ export default {
       name: '',
 
       description: '',
+      priorityNumber: '',
       image: null,
       status: true,
       isFeatured: true,
@@ -390,6 +411,12 @@ export default {
         {
           label: 'Name',
           field: 'name',
+        },
+        {
+          label: 'Priority',
+          field: 'priority',
+          sortable: false,
+
         },
         {
           label: 'Description',
@@ -487,11 +514,13 @@ export default {
       this.image = null
       this.status = true
       this.isFeatured = true
+      this.priorityNumber = ''
     },
     async onShow(value) {
       this.modalType = 'editModal'
       this.id = value?.id
       this.name = value?.name
+      this.priorityNumber = value?.priority
       this.description = value?.description
       this.previewImage = value?.category_image
       this.status = value?.status
@@ -610,6 +639,9 @@ export default {
 
             if (this.name) {
               formData.append('name', this.name)
+            }
+            if (this.priorityNumber) {
+              formData.append('priority', this.priorityNumber)
             }
 
             if (this.description) {
