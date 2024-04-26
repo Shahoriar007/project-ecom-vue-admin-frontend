@@ -63,9 +63,12 @@
     </b-card>
 
     <!-- all order -->
-    <customer-all-order-status-vue
-    :customerId = "customerInfo?.id"
-    ></customer-all-order-status-vue>
+    <template v-if="customerInfo?.id">
+      <customer-all-order-status-vue
+      :customerId = "customerInfo?.id"
+      ></customer-all-order-status-vue>
+    </template>
+    
 
     <b-card>
     
@@ -99,7 +102,7 @@
         <template slot="table-row" slot-scope="props">
           <!-- Column: head -->
           <span v-if="props.column.field === 'format_id'">
-            <strong>ID : </strong>{{ props.row.id }}
+            <strong>ID : </strong>{{ props.row.large_order_id }}
           </span>
 
           <!-- Column: Status -->
@@ -125,18 +128,12 @@
                   />
                 </template>
                 <template>
-                  <b-dropdown-item v-on:click="onView(props.row.id)">
+                  <b-dropdown-item v-if="$permissionAbility(ORDERS_SHOW, permissions)" v-on:click="onView(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
                   </b-dropdown-item>
                 </template>
 
-                <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">
-                  <b-dropdown-item v-on:click="onDelete(props.row.id)">
-                    <feather-icon icon="TrashIcon" class="mr-50" />
-                    <span>Delete</span>
-                  </b-dropdown-item>
-                </template> -->
               </b-dropdown>
             </span>
           </span>
@@ -219,11 +216,7 @@ import { VueGoodTable } from 'vue-good-table'
 import Ripple from 'vue-ripple-directive'
 
 import {
-  USERS_ACCESS,
-  USERS_CREATE,
-  USERS_DELETE,
-  USERS_EDIT,
-  USERS_SHOW,
+  ORDERS_SHOW,
 } from '@/helpers/permissionsConstant'
 import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
@@ -261,11 +254,8 @@ export default {
   },
   data() {
     return {
-      USERS_ACCESS,
-      USERS_CREATE,
-      USERS_SHOW,
-      USERS_EDIT,
-      USERS_DELETE,
+      ORDERS_SHOW,
+
       modelType: '',
       userId: '',
       name: '',
@@ -573,12 +563,11 @@ export default {
         this.rows = data;
 
          // i want sum of total purchase amount from data.total_price
-        //  this.totalPurchaseAmount = data.reduce((acc, item) => {
-        //   return acc + Number(item.total_price)
-        // }, 0) 
+         this.totalPurchaseAmount = data.reduce((acc, item) => {
+          return acc + Number(item.total_price)
+        }, 0) 
 
         this.customerInfo = data[0]?.customer;
-
 
       } catch (error) {
         console.log("error 3");

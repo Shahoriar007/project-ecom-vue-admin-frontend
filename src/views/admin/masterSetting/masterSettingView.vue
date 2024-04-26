@@ -53,7 +53,7 @@
                   <small class="text-danger">{{ errors[0] }}</small>
                 </validation-provider>
               </b-col>
-              <b-col md="4" class="align-self-center">
+              <b-col md="4" class="align-self-center" v-if="$permissionAbility(DELIVERY_CHARGE_EDIT, permissions)">
                 <!-- loading button -->
                 <template v-if="isDeliveryChargeSubmitting">
                   <b-button class="float-right" variant="primary" disabled>
@@ -107,6 +107,10 @@ import ToastificationContent from "@core/components/toastification/Toastificatio
 import Ripple from "vue-ripple-directive";
 import { ValidationProvider, ValidationObserver } from "vee-validate";
 import { required, integer } from "@validations";
+import {
+  DELIVERY_CHARGE_EDIT,
+} from '@/helpers/permissionsConstant'
+import { mapGetters } from 'vuex'
 
 export default {
   name: "GeneralSettingView",
@@ -134,12 +138,20 @@ export default {
   data() {
     return {
 
+      DELIVERY_CHARGE_EDIT,
+
       chargeInsideDhaka: '',
       chargeOutsideDhaka: '',
       isDeliveryChargeSubmitting: false,
 
 
     };
+  },
+
+  computed: {
+    ...mapGetters({
+      permissions: 'userModule/getPermissions',
+    })
   },
 
   async created() {

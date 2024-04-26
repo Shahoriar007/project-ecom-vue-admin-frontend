@@ -1,11 +1,11 @@
-import { USERS_ACCESS } from '@/helpers/permissionsConstant'
+import { ORDERS_ACCESS, ORDERS_SHOW } from '@/helpers/permissionsConstant'
 export default [
   {
     path: '/admin/orders',
     name: 'admin-orders',
     component: () => import('@/views/admin/order/OrderView.vue'),
     meta: {
-      gate: USERS_ACCESS,
+      gate: ORDERS_ACCESS,
       requiresAuth: true,
       pageTitle: 'Orders',
       homePatch: '/admin/dashboard',
@@ -24,7 +24,7 @@ export default [
     name: 'admin-orders-view',
     component: () => import('@/views/admin/order/OrderDetails.vue'),
     meta: {
-      gate: USERS_ACCESS,
+      gate: ORDERS_SHOW,
       requiresAuth: true,
       pageTitle: 'Order Details',
       homePatch: '/admin/dashboard',

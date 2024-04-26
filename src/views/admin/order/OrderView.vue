@@ -52,7 +52,7 @@
             </div>
           </b-col>
 
-          <template v-if="isRowChecked">
+          <template v-if="isRowChecked && $permissionAbility(ORDERS_STATUS_CHANGE, permissions)">
             <b-col md="1">
               <b-dropdown
                 id="dropdown-1"
@@ -187,12 +187,30 @@
           <span v-if="props.column.field === 'format_order'">
             
             <div style="display: block">
-              <b-link v-on:click="showModal(props.row.id)">
-                <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">✔️</span> 
-                <strong>ID: </strong> 
-                <span>{{ props.row.large_order_id }}</span> 
-                <span v-if="props.row.comment" style="color: red;">*</span>
-              </b-link>
+              <template v-if="$permissionAbility(ORDERS_SHOW, permissions)">
+                <b-link v-on:click="showModal(props.row.id)">
+                  <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" style="margin-bottom: 5px;" viewBox="0 0 48 48">
+                      <path fill="#43A047" d="M40.6 12.1L17 35.7 7.4 26.1 4.6 29 17 41.3 43.4 14.9z"></path>
+                    </svg>
+                  </span> 
+                  <strong>ID: </strong> 
+                  <span>{{ props.row.large_order_id }}</span> 
+                  <span v-if="props.row.comment" style="color: red;">*</span>
+                </b-link>
+              </template>
+
+              <template v-else>
+                  <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" style="margin-bottom: 5px;" viewBox="0 0 48 48">
+                      <path fill="#43A047" d="M40.6 12.1L17 35.7 7.4 26.1 4.6 29 17 41.3 43.4 14.9z"></path>
+                    </svg>
+                  </span> 
+                  <strong>ID: </strong> 
+                  <span>{{ props.row.large_order_id }}</span> 
+                  <span v-if="props.row.comment" style="color: red;">*</span>
+              </template>
+              
             </div>
 
             <div style="display: block">
@@ -211,13 +229,20 @@
             </div>
             <div style="display: block">
               <strong>Phone: </strong> 
-              <span>
+              <span v-if="props.row.customer.phone && props.row.customer.phone.startsWith('+880')">
                 <b-link :href="'https://wa.me/' + props.row.customer.phone" target="_blank">
                   <b-badge variant="light-success">
                     {{ props.row.customer.phone }}
                   </b-badge>
                   </b-link>
               </span> 
+              <span v-else>
+                <b-link :href="'https://wa.me/+88' + props.row.customer.phone" target="_blank">
+                  <b-badge variant="light-success">
+                    {{ props.row.customer.phone }}
+                  </b-badge>
+                  </b-link>
+              </span>
               <span v-if="props.row.comment" style="color: red;">*</span>
             </div>
           </span>
@@ -264,11 +289,11 @@
                   />
                 </template>
                 <template>
-                  <b-dropdown-item v-on:click="onView(props.row.id)">
+                  <b-dropdown-item v-if="$permissionAbility(ORDERS_SHOW, permissions)" v-on:click="onView(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
                   </b-dropdown-item>
-                  <b-dropdown-item v-on:click="showModal(props.row.id)">
+                  <b-dropdown-item v-if="$permissionAbility(ORDERS_SHOW, permissions)" v-on:click="showModal(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View Here</span>
                   </b-dropdown-item>
@@ -284,12 +309,7 @@
                   </b-dropdown-item> -->
                 </template>
 
-                <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">
-                  <b-dropdown-item v-on:click="onDelete(props.row.id)">
-                    <feather-icon icon="TrashIcon" class="mr-50" />
-                    <span>Delete</span>
-                  </b-dropdown-item>
-                </template> -->
+                
               </b-dropdown>
             </span>
           </span>
@@ -368,9 +388,12 @@
       
       <hr>
 <!-- all order -->
-        <customer-all-order-status-vue
-        :customerId = "modalCustomerId"
-        ></customer-all-order-status-vue>
+<template v-if="modalCustomerId">
+  <customer-all-order-status-vue
+  :customerId = "modalCustomerId"
+  ></customer-all-order-status-vue>
+</template>
+        
       <hr>
       
       <b-row>
@@ -403,7 +426,7 @@
             </div>
           </template>
 
-          <template>
+          <template v-if="$permissionAbility(CUSTOMERS_BLOCK, permissions)">
             <br>
           <h5 class="text-capitalize">Customer Status Change</h5>
             <div>
@@ -492,7 +515,7 @@
 
    
         <b-col md="12" lg="12" xs="12" v-for="followUpMsg in followUpMsgs" :key="followUpMsg.id" >
-            <h5 class="text-capitalize" v-if="$permissionAbility(USERS_DELETE, permissions)" >{{ followUpMsg.user.name }}</h5>
+            <h5 class="text-capitalize" v-if="$permissionAbility(ORDERS_FOLLOW_UP_NAME_SHOW, permissions)" >{{ followUpMsg.user.name }}</h5>
             <div>
               <b-card-text>{{ followUpMsg.msg }}</b-card-text>
             </div>
@@ -560,11 +583,10 @@ import { VueGoodTable } from 'vue-good-table'
 import Ripple from 'vue-ripple-directive'
 
 import {
-  USERS_ACCESS,
-  USERS_CREATE,
-  USERS_DELETE,
-  USERS_EDIT,
-  USERS_SHOW,
+  ORDERS_FOLLOW_UP_NAME_SHOW,
+  ORDERS_SHOW,
+  ORDERS_STATUS_CHANGE,
+  CUSTOMERS_BLOCK,
 } from '@/helpers/permissionsConstant'
 import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
@@ -607,11 +629,11 @@ export default {
   },
   data() {
     return {
-      USERS_ACCESS,
-      USERS_CREATE,
-      USERS_SHOW,
-      USERS_EDIT,
-      USERS_DELETE,
+      ORDERS_FOLLOW_UP_NAME_SHOW,
+      ORDERS_SHOW,
+      ORDERS_STATUS_CHANGE,
+      CUSTOMERS_BLOCK,
+
       userId: '',
       name: '',
       password: '',
@@ -794,7 +816,6 @@ export default {
       this.loadItems()
     },
     rangeDate: function (newVal, oldVal) {
-      console.log(newVal, oldVal)
       this.loadItems()
     },
   },
@@ -802,7 +823,7 @@ export default {
   methods: {
 
     clearFilter() {
-      this.filterStatus = ''
+      this.searchTerm = ''
       this.rangeDate = null
       this.loadItems()
     },
@@ -902,7 +923,6 @@ export default {
       } else {
         this.isRowChecked = true
         this.selectedRows = params?.selectedRows
-        console.log(this.selectedRows)
       }
     },
     formatFnTableLastContactDate(value) {
@@ -932,7 +952,6 @@ export default {
     async showModal(id) {
       await this.getOrderDetails(id)
         .then((response) => {
-          console.log(response.data.data)
 
           this.modalOrderId = response.data.data.large_order_id
           this.modalCustomerName = response.data.data.customer.full_name
@@ -948,7 +967,15 @@ export default {
           this.$bvModal.show('modal-order-details')
         })
         .catch((error) => {
-          console.log(error)
+          this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Error',
+            icon: 'BellIcon',
+            variant: 'danger',
+            text: error?.response?.data?.message,
+          },
+        })
         })
     },
     hiddenModal(id) {
@@ -963,11 +990,18 @@ export default {
         .then((response) => {
           this.followUpMsgs = response?.data?.follow_ups || [];
 
-          console.log(this.followUpMsgs);
           this.$bvModal.show('order-comment-modal')
         })
         .catch((error) => {
-          console.log(error)
+          this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Error',
+            icon: 'BellIcon',
+            variant: 'danger',
+            text: error?.response?.data?.message,
+          },
+          })
         })
       this.$bvModal.show('order-comment-modal')
     },
@@ -1133,7 +1167,6 @@ export default {
     },
 
     async onShow(value) {
-      //   console.log("onShow", value);
       this.modelType = 'editModel'
       this.userId = value?.id
       this.name = value?.name

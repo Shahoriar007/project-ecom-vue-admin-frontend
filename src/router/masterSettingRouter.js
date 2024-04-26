@@ -1,4 +1,4 @@
-import { CATEGORIES_ACCESS } from '@/helpers/permissionsConstant'
+import { MASTER_SETTINGS_ACCESS } from '@/helpers/permissionsConstant'
 export default [
   {
     path: '/admin/master-setting',
@@ -6,7 +6,7 @@ export default [
     component: () =>
       import('@/views/admin/masterSetting/masterSettingView.vue'),
     meta: {
-      gate: CATEGORIES_ACCESS,
+      gate: MASTER_SETTINGS_ACCESS,
       requiresAuth: true,
       pageTitle: 'Master Setting',
       homePatch: '/admin/dashboard',

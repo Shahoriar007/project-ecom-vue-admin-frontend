@@ -1,10 +1,10 @@
-import { USERS_ACCESS } from '@/helpers/permissionsConstant'
+import { CUSTOMERS_ACCESS } from '@/helpers/permissionsConstant'
 
 export default [
   {
     title: 'Customers',
     route: 'admin-customers',
     icon: 'UsersIcon',
-    gate: USERS_ACCESS,
+    gate: CUSTOMERS_ACCESS,
   },
 ]

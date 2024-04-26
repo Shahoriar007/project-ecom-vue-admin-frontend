@@ -73,23 +73,18 @@
                   />
                 </template>
                 <template>
-                  <b-dropdown-item v-on:click="onView(props.row.id)">
+                  <b-dropdown-item v-if="$permissionAbility(CUSTOMERS_SHOW, permissions)" v-on:click="onView(props.row.id)">
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
                   </b-dropdown-item>
-                  <b-dropdown-item v-on:click="onView(props.row.id)">
+                  <!-- <b-dropdown-item v-if="$permissionAbility(CUSTOMERS_BLOCK, permissions)" v-on:click="onView(props.row.id)">
                     <feather-icon icon="TrashIcon" class="mr-50" />
                     <span>Block Customer</span>
-                  </b-dropdown-item>
+                  </b-dropdown-item> -->
                   
                 </template>
 
-                <!-- <template v-if="$permissionAbility(USERS_DELETE, permissions)">
-                  <b-dropdown-item v-on:click="onDelete(props.row.id)">
-                    <feather-icon icon="TrashIcon" class="mr-50" />
-                    <span>Delete</span>
-                  </b-dropdown-item>
-                </template> -->
+                
               </b-dropdown>
             </span>
           </span>
@@ -170,11 +165,9 @@ import { VueGoodTable } from 'vue-good-table'
 import Ripple from 'vue-ripple-directive'
 
 import {
-  USERS_ACCESS,
-  USERS_CREATE,
-  USERS_DELETE,
-  USERS_EDIT,
-  USERS_SHOW,
+  CUSTOMERS_ACCESS,
+  CUSTOMERS_SHOW,
+  CUSTOMERS_BLOCK,
 } from '@/helpers/permissionsConstant'
 import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
@@ -209,11 +202,9 @@ export default {
   },
   data() {
     return {
-      USERS_ACCESS,
-      USERS_CREATE,
-      USERS_SHOW,
-      USERS_EDIT,
-      USERS_DELETE,
+      CUSTOMERS_ACCESS,
+      CUSTOMERS_SHOW,
+      CUSTOMERS_BLOCK,
       modelType: '',
       userId: '',
       name: '',
