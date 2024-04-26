@@ -189,7 +189,11 @@
             <div style="display: block">
               <template v-if="$permissionAbility(ORDERS_SHOW, permissions)">
                 <b-link v-on:click="showModal(props.row.id)">
-                  <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">✔️</span> 
+                  <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" style="margin-bottom: 5px;" viewBox="0 0 48 48">
+                      <path fill="#43A047" d="M40.6 12.1L17 35.7 7.4 26.1 4.6 29 17 41.3 43.4 14.9z"></path>
+                    </svg>
+                  </span> 
                   <strong>ID: </strong> 
                   <span>{{ props.row.large_order_id }}</span> 
                   <span v-if="props.row.comment" style="color: red;">*</span>
@@ -197,7 +201,11 @@
               </template>
 
               <template v-else>
-                  <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">✔️</span> 
+                  <span v-if="props.row.is_sticker_printed == 'yes'" style="font-size: small;">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" style="margin-bottom: 5px;" viewBox="0 0 48 48">
+                      <path fill="#43A047" d="M40.6 12.1L17 35.7 7.4 26.1 4.6 29 17 41.3 43.4 14.9z"></path>
+                    </svg>
+                  </span> 
                   <strong>ID: </strong> 
                   <span>{{ props.row.large_order_id }}</span> 
                   <span v-if="props.row.comment" style="color: red;">*</span>
@@ -221,13 +229,20 @@
             </div>
             <div style="display: block">
               <strong>Phone: </strong> 
-              <span>
+              <span v-if="props.row.customer.phone && props.row.customer.phone.startsWith('+880')">
                 <b-link :href="'https://wa.me/' + props.row.customer.phone" target="_blank">
                   <b-badge variant="light-success">
                     {{ props.row.customer.phone }}
                   </b-badge>
                   </b-link>
               </span> 
+              <span v-else>
+                <b-link :href="'https://wa.me/+88' + props.row.customer.phone" target="_blank">
+                  <b-badge variant="light-success">
+                    {{ props.row.customer.phone }}
+                  </b-badge>
+                  </b-link>
+              </span>
               <span v-if="props.row.comment" style="color: red;">*</span>
             </div>
           </span>
