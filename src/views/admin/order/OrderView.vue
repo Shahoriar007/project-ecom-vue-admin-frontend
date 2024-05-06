@@ -662,7 +662,7 @@ export default {
 
       followUpMsgs: [],
 
-      filterStatus: '',
+      filterStatus: 'pending',
       optionsRadio: [
         { text: 'All', value: 'all' },
         { text: 'Pending', value: 'pending' },
@@ -1258,6 +1258,7 @@ export default {
 
     async loadItems() {
       try {
+
         const [users] = await Promise.all([
           this.getUsers({
             show: this.serverParams.perPage,
