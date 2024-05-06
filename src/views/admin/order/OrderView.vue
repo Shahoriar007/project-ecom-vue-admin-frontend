@@ -265,6 +265,11 @@
           <span v-if="props.column.field === 'format_delivery_charge'">
             <div style="display: block">
               <span
+                >Product Price: {{ props.row.total_price - props.row.delivery_charge }}Tk</span
+              >
+            </div>
+            <div style="display: block">
+              <span
                 ><strong>{{ props.row.order_from }}</strong></span
               >
             </div>
