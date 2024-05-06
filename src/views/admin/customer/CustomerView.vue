@@ -51,9 +51,9 @@
           </span>
 
           <!-- Column: Status -->
-          <span v-if="props.column.field === 'status'">
-            <b-badge :variant="statusVariant(props.row.status)">
-              {{ props.row.status ? 'Active' : 'Inactive' }}
+          <span v-if="props.column.field === 'format_is_band'">
+            <b-badge >
+              {{ props.row.is_band ? 'Inactive' : 'Active' }}
             </b-badge>
           </span>
 
@@ -77,10 +77,10 @@
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
                   </b-dropdown-item>
-                  <!-- <b-dropdown-item v-if="$permissionAbility(CUSTOMERS_BLOCK, permissions)" v-on:click="onView(props.row.id)">
+                  <b-dropdown-item v-if="$permissionAbility(CUSTOMERS_BLOCK, permissions)" v-on:click="bandActiveCustomer(props.row.id)">
                     <feather-icon icon="TrashIcon" class="mr-50" />
-                    <span>Block Customer</span>
-                  </b-dropdown-item> -->
+                    <span>Change Status</span>
+                  </b-dropdown-item>
                   
                 </template>
 
@@ -254,6 +254,12 @@ export default {
           formatFn: this.formatFnTableLastContactDate,
         },
         {
+          label: 'Status',
+          field: 'format_is_band',
+          sortable: false,
+
+        },
+        {
           label: 'Action',
           field: 'action',
           sortable: false,
@@ -384,6 +390,35 @@ export default {
             icon: 'BellIcon',
             variant: 'danger',
             text: error?.response?.data?.message,
+          },
+        })
+      }
+    },
+
+    async bandActiveCustomer(customerId) {
+      try {
+        await this.$api.get(`api/customer/band-active/${customerId}`)
+
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Success',
+            icon: 'CheckIcon',
+            variant: 'success',
+            text: "Customer Status Changed",
+          },
+        })
+
+        this.loadItems();
+
+      } catch (error) {
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Error',
+            icon: 'BellIcon',
+            variant: 'danger',
+            text: "Customer Status Change Failed",
           },
         })
       }

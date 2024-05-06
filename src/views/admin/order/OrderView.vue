@@ -413,7 +413,7 @@
                   </b-link>
 
                   <b-badge v-if="modalCustomerStatus" variant="light-danger">
-                    Band
+                    Banned
                   </b-badge>
                   <b-badge v-else variant="light-success">
                     Active
@@ -446,7 +446,7 @@
                   Active
                 </template>
                 <template v-else>
-                  Band
+                  Banned
                 </template>
               </b-button>
             </div>
