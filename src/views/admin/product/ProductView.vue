@@ -58,7 +58,8 @@
             <b-avatar
               v-if="props?.row?.large_pictures"
               :src="props?.row?.large_pictures[0]?.original_url"
-              class="mr-1"
+              class="mr-1 avatar-large"
+
             />
 
             {{ truncateName(props.row?.name) }}
@@ -1505,5 +1506,13 @@ export default {
   background-color: rgb(255 255 255 / 50%);
   /* pointer-events: auto; */
   z-index: 2;
+}
+.avatar-large {
+  transition: transform 0.3s ease;
+}
+
+.avatar-large:hover {
+  transform: scale(4);
+  z-index: 999;
 }
 </style>
