@@ -59,10 +59,15 @@
           </span>
 
           <!-- Column: Status -->
-          <span v-if="props.column.field === 'format_status'">
-            <b-badge :variant="formatStatus(props.row.status)">
+            <span v-if="props.column.field === 'format_status'">
+            <b-button
+            v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+              variant="outline-warning"
+              v-on:click="changeStatus(props.row?.id)"
+              class="btn-sm"
+            >
               {{ props.row.status ? 'Active' : 'Inactive' }}
-            </b-badge>
+            </b-button>
           </span>
           <span v-if="props.column.field === 'format_featured'">
             <b-badge :variant="formatStatus(props.row.is_featured)">
@@ -470,6 +475,43 @@ export default {
   },
 
   methods: {
+
+    async changeStatus(categoryId){
+
+try{
+  await this.$api.get(`api/categories/status/update/${categoryId}`)
+  this.$toast({
+      component: ToastificationContent,
+      props: {
+        title: 'Success',
+        icon: 'CheckIcon',
+        variant: 'success',
+        text: "Category Status Changed",
+      },
+    })
+
+    this.loadItems();
+
+}
+catch(error){
+
+  console.log(error);
+
+  this.$toast({
+      component: ToastificationContent,
+      props: {
+        title: 'Error',
+        icon: 'BellIcon',
+        variant: 'danger',
+        text: "Category Status Change Failed",
+      },
+    })
+
+}
+
+
+},
+
     formatStatus(status) {
       if (status) {
         return 'light-success'

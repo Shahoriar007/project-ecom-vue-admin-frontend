@@ -265,6 +265,11 @@
           <span v-if="props.column.field === 'format_delivery_charge'">
             <div style="display: block">
               <span
+                >Product Price: {{ props.row.total_price - props.row.delivery_charge }}Tk</span
+              >
+            </div>
+            <div style="display: block">
+              <span
                 ><strong>{{ props.row.order_from }}</strong></span
               >
             </div>
@@ -408,7 +413,7 @@
                   </b-link>
 
                   <b-badge v-if="modalCustomerStatus" variant="light-danger">
-                    Band
+                    Banned
                   </b-badge>
                   <b-badge v-else variant="light-success">
                     Active
@@ -441,7 +446,7 @@
                   Active
                 </template>
                 <template v-else>
-                  Band
+                  Banned
                 </template>
               </b-button>
             </div>
@@ -662,7 +667,7 @@ export default {
 
       followUpMsgs: [],
 
-      filterStatus: '',
+      filterStatus: 'pending',
       optionsRadio: [
         { text: 'All', value: 'all' },
         { text: 'Pending', value: 'pending' },
@@ -1258,6 +1263,7 @@ export default {
 
     async loadItems() {
       try {
+
         const [users] = await Promise.all([
           this.getUsers({
             show: this.serverParams.perPage,
