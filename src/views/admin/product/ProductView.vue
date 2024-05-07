@@ -61,15 +61,24 @@
               class="mr-1 avatar-large"
 
             />
+            <b-link :href="showProductDetail(props.row?.slug).url" :target="showProductDetail(props.row?.slug).target">
+    <span>{{ truncateName(props.row?.name) }}</span>
+</b-link>
 
-            {{ truncateName(props.row?.name) }}
+
+            
           </span>
 
           <!-- Column: Status -->
           <span v-if="props.column.field === 'format_status'">
-            <b-badge :variant="formatStatus(props.row.status)">
+            <b-button
+            v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+              variant="outline-warning"
+              v-on:click="changeStatus(props.row?.id)"
+              class="btn-sm"
+            >
               {{ props.row.status ? 'Active' : 'Inactive' }}
-            </b-badge>
+            </b-button>
           </span>
 
           <template v-if="props?.column?.field === 'format_description'">
@@ -413,14 +422,13 @@
                 </ValidationProvider>
               </b-form-group>
             </b-col>
-            <b-col md="12" lg="12" xs="12">
+            <!-- <b-col md="12" lg="12" xs="12">
               <b-form-group label="Offer Notice" label-for="offer_notice">
                 <ValidationProvider
                   name="offer_notice"
                   v-slot="{ errors }"
                   vid="offer_notice"
                 >
-                  <!-- Second Quill Editor -->
                   <quill-editor
                     v-model="offerNotice"
                     :options="editorOption2"
@@ -475,7 +483,7 @@
                   <small class="text-danger">{{ errors[0] }}</small>
                 </ValidationProvider>
               </b-form-group>
-            </b-col>
+            </b-col> -->
             <b-col md="4" lg="4" xs="12">
               <b-form-group label="Category " label-for="category_id">
                 <ValidationProvider
@@ -771,6 +779,7 @@ import {
   BInputGroup,
   BInputGroupAppend,
   BModal,
+  BLink,
   BPagination,
   BRow,
 } from 'bootstrap-vue'
@@ -802,6 +811,7 @@ export default {
     BInputGroupAppend,
     BInputGroup,
     BFormFile,
+    BLink,
     BFormTextarea,
     quillEditor,
   },
@@ -986,6 +996,48 @@ export default {
   },
 
   methods: {
+
+    showProductDetail(slug) {
+    const url = `https://flarebranded.com/product/default/${slug}`;
+    const target = "_blank";
+    return { url, target };
+},
+   async changeStatus(productId){
+
+    try{
+      await this.$api.get(`api/product/status/update/${productId}`)
+      this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Success',
+            icon: 'CheckIcon',
+            variant: 'success',
+            text: "Product Status Changed",
+          },
+        })
+
+        this.loadItems();
+
+    }
+    catch(error){
+
+      console.log(error);
+
+      this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Error',
+            icon: 'BellIcon',
+            variant: 'danger',
+            text: "Product Status Change Failed",
+          },
+        })
+
+    }
+
+
+    },
+
     //copy product
     onCopy(value) {
       this.onCopyModal(value);
@@ -1110,6 +1162,7 @@ export default {
       return await this.$api.get('api/labels/all')
     },
     showModal() {
+      this.skuCode = Math.floor(Math.random() * 10000).toString().padStart(6, '0');
       this.$bvModal.show('modal-product-form')
     },
     hiddenModal() {
@@ -1206,7 +1259,7 @@ export default {
       this.isHot = value?.is_hot
       this.isForYou = value?.is_for_you
       this.priorityNumber = value?.priority
-      this.videoLink = value?.video_link
+      this.videoLink = "",
       this.selectLabels = value?.labels?.map((item) => {
         return item?.name
       })
