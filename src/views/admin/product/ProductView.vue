@@ -93,11 +93,25 @@
           </template>
           <template v-if="props?.column?.field === 'format_price'">
             <div>
-              <span><b>Regular Price:</b> {{ props.row?.price }}</span>
+              <b-link v-on:click="onShowTwo(props.row)" ><span><b>Regular Price:</b> {{ props.row?.price }}</span></b-link>
             </div>
             <div>
               <span><b>Sale Price:</b> {{ props.row?.sale_price }}</span>
             </div>
+          </template>
+
+          <template v-if="props?.column?.field === 'format_priority'">
+            <div>
+              <b-link v-on:click="onShowTwo(props.row)" > <span> {{ props.row?.priority }}</span> </b-link>
+            </div>
+           
+          </template>
+
+          <template v-if="props?.column?.field === 'format_stock'">
+            <div>
+              <b-link v-on:click="onShowTwo(props.row)" ><span> {{ props.row?.stock }}</span></b-link>
+            </div>
+           
           </template>
 
           <!-- Column: Action -->
@@ -1009,7 +1023,7 @@ export default {
         },
         {
           label: 'Priority',
-          field: 'priority',
+          field: 'format_priority',
           sortable: false,
 
         },
@@ -1025,7 +1039,7 @@ export default {
         },
         {
           label: 'Stock',
-          field: 'stock',
+          field: 'format_stock',
           sortable: false,
         },
         {
