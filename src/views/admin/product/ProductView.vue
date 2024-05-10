@@ -91,7 +91,7 @@
               <feather-icon icon="InfoIcon" />
             </b-button>
           </template>
-          <template v-if="props?.column?.field === 'format_price'">
+          <template v-if="props?.column?.field === 'format_price' && $permissionAbility(PRODUCTS_EDIT, permissions)">
             <div>
               <b-link v-on:click="onShowTwo(props.row)" ><span><b>Regular Price:</b> {{ props.row?.price }}</span></b-link>
             </div>
@@ -100,16 +100,38 @@
             </div>
           </template>
 
-          <template v-if="props?.column?.field === 'format_priority'">
+          <template v-else-if="props?.column?.field === 'format_price'">
+            <div>
+              <span><b>Regular Price:</b> {{ props.row?.price }}</span>
+            </div>
+            <div>
+              <span><b>Sale Price:</b> {{ props.row?.sale_price }}</span>
+            </div>
+          </template>
+
+          <template v-if="props?.column?.field === 'format_priority' && $permissionAbility(PRODUCTS_EDIT, permissions)">
             <div>
               <b-link v-on:click="onShowTwo(props.row)" > <span> {{ props.row?.priority }}</span> </b-link>
             </div>
            
           </template>
+          <template v-else-if="props?.column?.field === 'format_priority'">
+            <div>
+              <span> {{ props.row?.priority }}</span>
+            </div>
+           
+          </template>
 
-          <template v-if="props?.column?.field === 'format_stock'">
+          <template v-if="props?.column?.field === 'format_stock' && $permissionAbility(PRODUCTS_EDIT, permissions)">
             <div>
               <b-link v-on:click="onShowTwo(props.row)" ><span> {{ props.row?.stock }}</span></b-link>
+            </div>
+           
+          </template>
+
+          <template v-else-if="props?.column?.field === 'format_stock'">
+            <div>
+              <span> {{ props.row?.stock }}</span>
             </div>
            
           </template>
@@ -136,13 +158,6 @@
                   </b-dropdown-item>
                 </template>
 
-                <template v-if="$permissionAbility(PRODUCTS_EDIT, permissions)">
-                  <b-dropdown-item v-on:click="onShowTwo(props.row)">
-                    <feather-icon icon="Edit2Icon" class="mr-50" />
-                    <span>Show/ Edit 2</span>
-                  </b-dropdown-item>
-                </template>
-               
 
                 <template
                   v-if="$permissionAbility(PRODUCTS_DELETE, permissions)"
