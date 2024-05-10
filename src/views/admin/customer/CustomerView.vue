@@ -17,6 +17,27 @@
         </div>
       </div> -->
 
+        <!-- filter -->
+        <template>
+        <b-row>
+          <b-col md="10">
+            <!-- radio button -->
+            <div style="overflow-x: auto; white-space: nowrap; max-width: 100%">
+              <b-form-group>
+                <b-form-radio-group
+                  id="btn-radios-1"
+                  v-model="filterStatus"
+                  button-variant="outline-primary"
+                  :options="optionsRadio"
+                  buttons
+                  name="radios-btn-default"
+                />
+              </b-form-group>
+            </div>
+          </b-col> 
+        </b-row>
+      </template>
+
       <!-- table -->
       <vue-good-table
         :line-numbers="true"
@@ -155,6 +176,7 @@ import {
   BFormInput,
   BFormSelect,
   BInputGroup,
+  BFormRadioGroup,
   BInputGroupAppend,
   BModal,
   BPagination,
@@ -196,6 +218,8 @@ export default {
     BModal,
     BInputGroupAppend,
     BInputGroup,
+    BFormRadioGroup,
+    
   },
   directives: {
     Ripple,
@@ -213,6 +237,13 @@ export default {
       email: '',
       selectRoleId: '',
       roleIdOption: [],
+      filterStatus: 'active',
+      optionsRadio: [
+        { text: 'All', value: 'all' },
+        { text: 'Active', value: 'active' },
+        { text: 'Blocked', value: 'blocked' },
+        
+      ],
 
       selectStatusValue: true,
       statusValueOption: [
@@ -322,6 +353,13 @@ export default {
         },
       })
     }
+  },
+
+  watch: {
+    filterStatus: function (newVal, oldVal) {
+      this.loadItems()
+    },
+   
   },
 
   methods: {
@@ -467,6 +505,7 @@ export default {
           page: params.page,
           sort: params.sort,
           q: params.q,
+          filterStatus: params.filterStatus,
         },
       })
     },
@@ -482,6 +521,8 @@ export default {
             page: this.serverParams.page,
             sort: this.serverParams.sort,
             q: this.searchTerm,
+            filterStatus: this.filterStatus,
+
           }),
         ])
 
