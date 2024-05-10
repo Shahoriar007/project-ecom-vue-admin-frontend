@@ -236,6 +236,13 @@
                   </b-badge>
                   </b-link>
               </span> 
+              <span v-else-if="props.row.customer.phone && props.row.customer.phone.startsWith('880')">
+                <b-link :href="'https://wa.me/+' + props.row.customer.phone" target="_blank">
+                  <b-badge variant="light-success">
+                    {{ props.row.customer.phone }}
+                  </b-badge>
+                  </b-link>
+              </span> 
               <span v-else>
                 <b-link :href="'https://wa.me/+88' + props.row.customer.phone" target="_blank">
                   <b-badge variant="light-success">
