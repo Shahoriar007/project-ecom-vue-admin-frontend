@@ -25,6 +25,26 @@
           </template>
         </div>
       </div>
+       <!-- filter -->
+       <template>
+        <b-row>
+          <b-col md="10">
+            <!-- radio button -->
+            <div style="overflow-x: auto; white-space: nowrap; max-width: 100%">
+              <b-form-group>
+                <b-form-radio-group
+                  id="btn-radios-1"
+                  v-model="filterStatus"
+                  button-variant="outline-primary"
+                  :options="optionsRadio"
+                  buttons
+                  name="radios-btn-default"
+                />
+              </b-form-group>
+            </div>
+          </b-col> 
+        </b-row>
+      </template>
       <!-- table -->
       <vue-good-table
         mode="remote"
@@ -91,13 +111,49 @@
               <feather-icon icon="InfoIcon" />
             </b-button>
           </template>
-          <template v-if="props?.column?.field === 'format_price'">
+          <template v-if="props?.column?.field === 'format_price' && $permissionAbility(PRODUCTS_EDIT, permissions)">
+            <div>
+              <b-link v-on:click="onShowTwo(props.row)" ><span><b>Regular Price:</b> {{ props.row?.price }}</span></b-link>
+            </div>
+            <div>
+              <span><b>Sale Price:</b> {{ props.row?.sale_price }}</span>
+            </div>
+          </template>
+
+          <template v-else-if="props?.column?.field === 'format_price'">
             <div>
               <span><b>Regular Price:</b> {{ props.row?.price }}</span>
             </div>
             <div>
               <span><b>Sale Price:</b> {{ props.row?.sale_price }}</span>
             </div>
+          </template>
+
+          <template v-if="props?.column?.field === 'format_priority' && $permissionAbility(PRODUCTS_EDIT, permissions)">
+            <div>
+              <b-link v-on:click="onShowTwo(props.row)" > <span> {{ props.row?.priority }}</span> </b-link>
+            </div>
+           
+          </template>
+          <template v-else-if="props?.column?.field === 'format_priority'">
+            <div>
+              <span> {{ props.row?.priority }}</span>
+            </div>
+           
+          </template>
+
+          <template v-if="props?.column?.field === 'format_stock' && $permissionAbility(PRODUCTS_EDIT, permissions)">
+            <div>
+              <b-link v-on:click="onShowTwo(props.row)" ><span> {{ props.row?.stock }}</span></b-link>
+            </div>
+           
+          </template>
+
+          <template v-else-if="props?.column?.field === 'format_stock'">
+            <div>
+              <span> {{ props.row?.stock }}</span>
+            </div>
+           
           </template>
 
           <!-- Column: Action -->
@@ -121,6 +177,7 @@
                     <span>Show/ Edit Details</span>
                   </b-dropdown-item>
                 </template>
+
 
                 <template
                   v-if="$permissionAbility(PRODUCTS_DELETE, permissions)"
@@ -751,7 +808,121 @@
         <div v-html="offerNotice"></div>
       </b-card-text>
     </b-modal>
+
+    <b-modal
+      id="modal-product-form-two"
+      centered
+      :title="EditProductTwo"
+      hide-footer
+      @hidden="hiddenModalTwo"
+      no-close-on-backdrop
+      size="xl"
+    >
+    <validation-observer ref="validationRefTwo">
+        <b-form v-on:submit.prevent="validationFormTwo">
+          <b-row>
+            
+            <b-col md="2" lg="2" xs="12">
+              <b-form-group label="Priority" label-for="priority">
+                <validation-provider
+                  #default="{ errors }"
+                  name="priority"
+                  vid="priority"
+                >
+                  <b-form-input
+                    id="priority"
+                    type="number"
+                    v-model="priorityNumber"
+                    :state="errors.length > 0 ? false : null"
+                    name="priority"
+                    placeholder="Product Priority"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </validation-provider>
+              </b-form-group>
+            </b-col>
+            <b-col md="4" lg="4" xs="12">
+              <b-form-group label="Stock " label-for="stock">
+                <ValidationProvider
+                  name="stock"
+                  v-slot="{ errors }"
+                  vid="stock"
+                >
+                  <b-form-input
+                    id="stock"
+                    type="number"
+                    v-model="quantity"
+                    :state="errors.length > 0 ? false : null"
+                    name="stock"
+                    placeholder="Product Stock"
+                    @wheel.prevent
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+
+            <b-col md="4" lg="4" xs="12">
+              <b-form-group label="Price " label-for="price">
+                <ValidationProvider
+                  name="price"
+                  v-slot="{ errors }"
+                  vid="price"
+                >
+                  <b-form-input
+                    id="price"
+                    type="number"
+                    v-model="price"
+                    :state="errors.length > 0 ? false : null"
+                    name="price"
+                    placeholder="Product Regular Price"
+                    @wheel.prevent
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col>
+
+            <!-- <b-col md="4" lg="4" xs="12">
+              <b-form-group label="Sale Price " label-for="sale_price">
+                <ValidationProvider
+                  name="sale_price"
+                  v-slot="{ errors }"
+                  vid="sale_price"
+                >
+                  <b-form-input
+                    id="sale_price"
+                    type="number"
+                    v-model="salePrice"
+                    :state="errors.length > 0 ? false : null"
+                    name="sale_price"
+                    placeholder="Product Sale Price"
+                  />
+                  <small class="text-danger">{{ errors[0] }}</small>
+                </ValidationProvider>
+              </b-form-group>
+            </b-col> -->
+
+           
+
+            <!-- submit and reset -->
+            <b-col md="12" lg="12" xs="12">
+              <b-button
+                v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+                type="submit"
+                variant="primary"
+                class="mr-1"
+              >
+                {{ 'Update' }}
+              </b-button>
+            </b-col>
+          </b-row>
+        </b-form>
+      </validation-observer>
+
+      </b-modal>
   </b-card>
+
 </template>
 
 <script>
@@ -779,6 +950,7 @@ import {
   BInputGroup,
   BInputGroupAppend,
   BModal,
+  BFormRadioGroup,
   BLink,
   BPagination,
   BRow,
@@ -812,6 +984,7 @@ export default {
     BInputGroup,
     BFormFile,
     BLink,
+    BFormRadioGroup,
     BFormTextarea,
     quillEditor,
   },
@@ -848,6 +1021,14 @@ export default {
       status: true,
       selectLabels: [],
       labelOptions: [],
+      filterStatus: 'active',
+      optionsRadio: [
+        { text: 'All', value: 'all' },
+        { text: 'Active', value: 'active' },
+        { text: 'Trashed', value: 'inactive' },
+
+        
+      ],
       statusValueOption: [
         {
           name: 'Active',
@@ -887,7 +1068,7 @@ export default {
         },
         {
           label: 'Priority',
-          field: 'priority',
+          field: 'format_priority',
           sortable: false,
 
         },
@@ -903,7 +1084,7 @@ export default {
         },
         {
           label: 'Stock',
-          field: 'stock',
+          field: 'format_stock',
           sortable: false,
         },
         {
@@ -994,7 +1175,12 @@ export default {
       return item.name
     })
   },
-
+  watch: {
+    filterStatus: function (newVal, oldVal) {
+      this.loadItems()
+    },
+   
+  },
   methods: {
 
     showProductDetail(slug) {
@@ -1170,6 +1356,13 @@ export default {
       this.$bvModal.hide('modal-product-form')
       this.resetModal()
     },
+    showModalTwo() {
+      this.$bvModal.show('modal-product-form-two')
+    },
+    hiddenModalTwo() {
+      this.$bvModal.hide('modal-product-form-two')
+      this.resetModalTwo()
+    },
     resetModal() {
       this.id = ''
       this.name = ''
@@ -1196,6 +1389,12 @@ export default {
       this.filteredChildCategoryOptions = []
       this.priorityNumber = ''
       this.videoLink = ''
+    },
+    resetModalTwo() {
+      this.id = ''
+      this.quantity = ''
+      this.price = ''
+      this.priorityNumber = ''
     },
     async onShow(value) {
       this.modalType = 'editModal'
@@ -1239,6 +1438,14 @@ export default {
       // })
 
       this.showModal()
+    },
+    async onShowTwo(value) {
+      this.id = value?.id
+      this.quantity = value?.stock
+      this.price = value?.price
+      this.priorityNumber = value?.priority
+
+      this.showModalTwo()
     },
 
     async onCopyModal(value) {
@@ -1338,6 +1545,8 @@ export default {
           page: params.page,
           sort: params.sort,
           q: params.q,
+          filterStatus: params.filterStatus,
+
         },
       })
     },
@@ -1350,6 +1559,8 @@ export default {
             page: this.serverParams.page,
             sort: this.serverParams.sort,
             q: this.searchTerm,
+            filterStatus: this.filterStatus,
+
           }),
         ])
 
@@ -1501,6 +1712,61 @@ export default {
               })
             }
           } catch (error) {
+            if (error?.response?.data?.message) {
+              this.$toast({
+                component: ToastificationContent,
+                props: {
+                  title: 'Error',
+                  icon: 'BellIcon',
+                  variant: 'danger',
+                  text: error?.response?.data?.message,
+                },
+              })
+            }
+
+            if (error?.response?.data?.errors) {
+              this.$refs.validationRef.setErrors(error?.response?.data?.errors)
+            }
+          }
+        }
+      })
+    },
+
+    validationFormTwo: async function () {
+      this.$refs.validationRefTwo.validate().then(async (success) => {
+        if (success) {
+          try {
+            const formData = new FormData()
+
+            
+            if (this.priorityNumber) {
+              formData.append('priority', this.priorityNumber)
+            }
+            formData.append('stock', this.quantity)
+            if (this.price) {
+              formData.append('price', this.price)
+            }
+            
+              formData.append('_method', 'POST')
+              await this.$api.post(`/api/products/modal/two/${this.id}`, formData, {
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                },
+              })
+
+              this.loadItems()
+              this.hiddenModalTwo()
+              this.$toast({
+                component: ToastificationContent,
+                props: {
+                  title: 'Success',
+                  icon: 'BellIcon',
+                  variant: 'success',
+                  text: 'Product Information Successfully Updated',
+                },
+              })
+            } 
+             catch (error) {
             if (error?.response?.data?.message) {
               this.$toast({
                 component: ToastificationContent,

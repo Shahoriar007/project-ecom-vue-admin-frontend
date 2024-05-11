@@ -25,6 +25,25 @@
           </template>
         </div>
       </div>
+      <!-- filter -->
+      <!-- <template>
+        <b-row>
+          <b-col md="10">
+            <div style="overflow-x: auto; white-space: nowrap; max-width: 100%">
+              <b-form-group>
+                <b-form-radio-group
+                  id="btn-radios-1"
+                  v-model="filterStatus"
+                  button-variant="outline-primary"
+                  :options="optionsRadio"
+                  buttons
+                  name="radios-btn-default"
+                />
+              </b-form-group>
+            </div>
+          </b-col> 
+        </b-row>
+      </template> -->
 
       <!-- table -->
       <vue-good-table
@@ -348,6 +367,7 @@ import {
   BFormTextarea,
   BInputGroup,
   BInputGroupAppend,
+  BFormRadioGroup,
   BModal,
   BPagination,
   BRow,
@@ -378,6 +398,7 @@ export default {
     BModal,
     BInputGroupAppend,
     BInputGroup,
+    BFormRadioGroup,
     BFormFile,
     BFormTextarea,
   },
@@ -400,6 +421,14 @@ export default {
       image: null,
       status: true,
       isFeatured: true,
+      filterStatus: 'active',
+      optionsRadio: [
+        { text: 'All', value: 'all' },
+        { text: 'Active', value: 'active' },
+        { text: 'Trashed', value: 'inactive' },
+
+        
+      ],
       statusValueOption: [
         {
           name: 'Active',
@@ -472,6 +501,13 @@ export default {
     ...mapGetters({
       permissions: 'userModule/getPermissions',
     }),
+  },
+
+  watch: {
+    filterStatus: function (newVal, oldVal) {
+      this.loadItems()
+    },
+   
   },
 
   methods: {
@@ -641,6 +677,7 @@ catch(error){
           page: params.page,
           sort: params.sort,
           q: params.q,
+          filterStatus: params.filterStatus,
         },
       })
     },
@@ -653,6 +690,8 @@ catch(error){
             page: this.serverParams.page,
             sort: this.serverParams.sort,
             q: this.searchTerm,
+            filterStatus: this.filterStatus,
+
           }),
         ])
 
