@@ -26,10 +26,9 @@
         </div>
       </div>
       <!-- filter -->
-      <template>
+      <!-- <template>
         <b-row>
           <b-col md="10">
-            <!-- radio button -->
             <div style="overflow-x: auto; white-space: nowrap; max-width: 100%">
               <b-form-group>
                 <b-form-radio-group
@@ -44,7 +43,7 @@
             </div>
           </b-col> 
         </b-row>
-      </template>
+      </template> -->
 
       <!-- table -->
       <vue-good-table
@@ -426,8 +425,7 @@ export default {
       optionsRadio: [
         { text: 'All', value: 'all' },
         { text: 'Active', value: 'active' },
-        { text: 'Inactive', value: 'inactive' },
-        { text: 'Trashed', value: 'trashed' },
+        { text: 'Trashed', value: 'inactive' },
 
         
       ],
