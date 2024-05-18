@@ -12,6 +12,7 @@ import productRouter from './productRouter'
 import roleRouter from './roleRouter'
 import subCategoryRouter from './subCategoryRouter'
 import usersRouter from './usersRouter'
+import userActivityRouter from './userActivityRouter'
 
 import fbPixelRouter from './fbPixelRouter'
 import customerRouter from './customerRouter'
@@ -47,6 +48,7 @@ const router = new VueRouter({
       },
     },
     ...usersRouter,
+    ...userActivityRouter,
     ...authRouter,
     ...roleRouter,
     ...categoryRouter,
