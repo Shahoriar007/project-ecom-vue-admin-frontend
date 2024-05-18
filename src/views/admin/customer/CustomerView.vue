@@ -35,13 +35,30 @@
               </b-form-group>
             </div>
           </b-col> 
+          <b-col>
+              <!--CSV button-->
+
+      <b-button
+              class="flex-shrink-0"
+              v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+              variant="success"
+              v-on:click="exportDataToCsv"
+
+            >
+              CSV
+            </b-button>
+          </b-col>
         </b-row>
       </template>
+
+    
+
 
       <!-- table -->
       <vue-good-table
         :line-numbers="true"
         mode="remote"
+        @on-selected-rows-change="selectionChanged"
         @on-page-change="onPageChange"
         @on-sort-change="onSortChange"
         @on-column-filter="onColumnFilter"
@@ -62,6 +79,15 @@
         :pagination-options="{
           enabled: true,
           perPage: pageLength,
+        }"
+        :select-options="{
+          enabled: true,
+          selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
+          selectionInfoClass: 'custom-class',
+          selectionText: 'rows selected',
+          clearSelectionText: 'clear',
+          disableSelectInfo: false, // disable the select info panel on top
+          selectAllByGroup: true, // when used in combination with a grouped table, add a checkbox in the header row to check/uncheck the entire group
         }"
       >
         <template slot="table-row" slot-scope="props">
@@ -238,6 +264,8 @@ export default {
       selectRoleId: '',
       roleIdOption: [],
       filterStatus: 'active',
+      isRowChecked: false,
+      selectedRows: [],
       optionsRadio: [
         { text: 'All', value: 'all' },
         { text: 'Active', value: 'active' },
@@ -368,6 +396,36 @@ export default {
         return this.$moment(value).format('MMM Do YYYY, h:mm a')
       }
     },
+
+    exportDataToCsv() {
+    console.log(this.selectedRows);
+    const data = this.selectedRows.map(row => ({
+        name: row.first_name,
+        phone: row.phone
+    }));      
+    const csvContent = this.convertToCSV(data);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'export_data.csv');
+    link.click();
+},
+
+convertToCSV(data) {
+    const headers = Object.keys(data[0]);
+    const rows = data.map(obj => headers.map(header => {
+        let value = obj[header];
+        if (header === 'phone') {
+            value = `"${value}"`; // Enclose phone numbers in double quotes
+        }
+        return value;
+    }));
+    const headerRow = headers.join(',');
+    const csvRows = [headerRow, ...rows.map(row => row.join(','))];
+    return csvRows.join('\n');
+},
+
     onView(id) {
       this.$router.push({
         name: 'admin-customer-history',
@@ -480,6 +538,15 @@ export default {
     onPageChange(params) {
       this.updateParams({ page: params.currentPage })
       this.loadItems()
+    },
+    selectionChanged(params) {
+      if (params?.selectedRows.length == 0) {
+        this.isRowChecked = false
+        this.selectedRows = []
+      } else {
+        this.isRowChecked = true
+        this.selectedRows = params?.selectedRows
+      }
     },
 
     onPerPageChange(params) {

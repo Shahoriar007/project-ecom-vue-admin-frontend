@@ -1025,7 +1025,9 @@ export default {
       optionsRadio: [
         { text: 'All', value: 'all' },
         { text: 'Active', value: 'active' },
-        { text: 'Trashed', value: 'inactive' },
+        { text: 'Inactive', value: 'inactive' },
+        { text: 'Trashed', value: 'trashed' },
+
 
         
       ],
