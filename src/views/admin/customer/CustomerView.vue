@@ -17,8 +17,8 @@
         </div>
       </div> -->
 
-        <!-- filter -->
-        <template>
+      <!-- filter -->
+      <template>
         <b-row>
           <b-col md="10">
             <!-- radio button -->
@@ -34,25 +34,21 @@
                 />
               </b-form-group>
             </div>
-          </b-col> 
-          <b-col>
-              <!--CSV button-->
+          </b-col>
+          <b-col md="2">
+            <!--CSV button-->
 
-      <b-button
+            <b-button
               class="flex-shrink-0"
               v-ripple.400="'rgba(255, 255, 255, 0.15)'"
               variant="success"
               v-on:click="exportDataToCsv"
-
             >
-              CSV
+              Export CSV
             </b-button>
           </b-col>
         </b-row>
       </template>
-
-    
-
 
       <!-- table -->
       <vue-good-table
@@ -99,7 +95,7 @@
 
           <!-- Column: Status -->
           <span v-if="props.column.field === 'format_is_band'">
-            <b-badge >
+            <b-badge>
               {{ props.row.is_band ? 'Inactive' : 'Active' }}
             </b-badge>
           </span>
@@ -120,18 +116,21 @@
                   />
                 </template>
                 <template>
-                  <b-dropdown-item v-if="$permissionAbility(CUSTOMERS_SHOW, permissions)" v-on:click="onView(props.row.id)">
+                  <b-dropdown-item
+                    v-if="$permissionAbility(CUSTOMERS_SHOW, permissions)"
+                    v-on:click="onView(props.row.id)"
+                  >
                     <feather-icon icon="Edit2Icon" class="mr-50" />
                     <span>View</span>
                   </b-dropdown-item>
-                  <b-dropdown-item v-if="$permissionAbility(CUSTOMERS_BLOCK, permissions)" v-on:click="bandActiveCustomer(props.row.id)">
+                  <b-dropdown-item
+                    v-if="$permissionAbility(CUSTOMERS_BLOCK, permissions)"
+                    v-on:click="bandActiveCustomer(props.row.id)"
+                  >
                     <feather-icon icon="TrashIcon" class="mr-50" />
                     <span>Change Status</span>
                   </b-dropdown-item>
-                  
                 </template>
-
-                
               </b-dropdown>
             </span>
           </span>
@@ -182,8 +181,6 @@
         </template>
       </vue-good-table>
     </div>
-
-    
   </b-card>
 </template>
 
@@ -245,7 +242,6 @@ export default {
     BInputGroupAppend,
     BInputGroup,
     BFormRadioGroup,
-    
   },
   directives: {
     Ripple,
@@ -270,7 +266,6 @@ export default {
         { text: 'All', value: 'all' },
         { text: 'Active', value: 'active' },
         { text: 'Blocked', value: 'blocked' },
-        
       ],
 
       selectStatusValue: true,
@@ -316,7 +311,6 @@ export default {
           label: 'Status',
           field: 'format_is_band',
           sortable: false,
-
         },
         {
           label: 'Action',
@@ -387,7 +381,6 @@ export default {
     filterStatus: function (newVal, oldVal) {
       this.loadItems()
     },
-   
   },
 
   methods: {
@@ -398,33 +391,35 @@ export default {
     },
 
     exportDataToCsv() {
-    console.log(this.selectedRows);
-    const data = this.selectedRows.map(row => ({
+      console.log(this.selectedRows)
+      const data = this.selectedRows.map((row) => ({
         name: row.first_name,
-        phone: row.phone
-    }));      
-    const csvContent = this.convertToCSV(data);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'export_data.csv');
-    link.click();
-},
+        phone: row.phone,
+      }))
+      const csvContent = this.convertToCSV(data)
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'export_data.csv')
+      link.click()
+    },
 
-convertToCSV(data) {
-    const headers = Object.keys(data[0]);
-    const rows = data.map(obj => headers.map(header => {
-        let value = obj[header];
-        if (header === 'phone') {
-            value = `"${value}"`; // Enclose phone numbers in double quotes
-        }
-        return value;
-    }));
-    const headerRow = headers.join(',');
-    const csvRows = [headerRow, ...rows.map(row => row.join(','))];
-    return csvRows.join('\n');
-},
+    convertToCSV(data) {
+      const headers = Object.keys(data[0])
+      const rows = data.map((obj) =>
+        headers.map((header) => {
+          let value = obj[header]
+          if (header === 'phone') {
+            value = `"${value}"` // Enclose phone numbers in double quotes
+          }
+          return value
+        })
+      )
+      const headerRow = headers.join(',')
+      const csvRows = [headerRow, ...rows.map((row) => row.join(','))]
+      return csvRows.join('\n')
+    },
 
     onView(id) {
       this.$router.push({
@@ -501,12 +496,11 @@ convertToCSV(data) {
             title: 'Success',
             icon: 'CheckIcon',
             variant: 'success',
-            text: "Customer Status Changed",
+            text: 'Customer Status Changed',
           },
         })
 
-        this.loadItems();
-
+        this.loadItems()
       } catch (error) {
         this.$toast({
           component: ToastificationContent,
@@ -514,7 +508,7 @@ convertToCSV(data) {
             title: 'Error',
             icon: 'BellIcon',
             variant: 'danger',
-            text: "Customer Status Change Failed",
+            text: 'Customer Status Change Failed',
           },
         })
       }
@@ -589,7 +583,6 @@ convertToCSV(data) {
             sort: this.serverParams.sort,
             q: this.searchTerm,
             filterStatus: this.filterStatus,
-
           }),
         ])
 

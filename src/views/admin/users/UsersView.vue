@@ -83,14 +83,20 @@
 
           <!-- Column: Status -->
           <span v-if="props.column.field === 'format_status'">
-            <b-button
-            v-ripple.400="'rgba(113, 102, 240, 0.15)'"
-              variant="outline-warning"
-              v-on:click="changeStatus(props.row?.id)"
-              class="btn-sm"
-            >
+            <template v-if="$permissionAbility(USERS_EDIT, permissions)">
+              <b-button
+              v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+                variant="outline-warning"
+                v-on:click="changeStatus(props.row?.id)"
+                class="btn-sm"
+              >
+                {{ props.row.status ? 'Active' : 'Inactive' }}
+              </b-button>
+            </template>
+            
+            <template v-else>
               {{ props.row.status ? 'Active' : 'Inactive' }}
-            </b-button>
+            </template>
           </span>
 
           <!-- Column: Action -->
@@ -115,12 +121,20 @@
                   </b-dropdown-item>
                 </template>
 
-                <template v-if="$permissionAbility(USERS_DELETE, permissions)">
+                <template v-if="$permissionAbility(USERS_DELETE, permissions) && filterStatus != 'trashed'">
                   <b-dropdown-item v-on:click="onDelete(props.row.id)">
                     <feather-icon icon="TrashIcon" class="mr-50" />
                     <span>Delete</span>
                   </b-dropdown-item>
                 </template>
+
+                <template v-if="$permissionAbility(USERS_EDIT, permissions) && filterStatus == 'trashed'">
+                  <b-dropdown-item v-on:click="onRestore(props.row.id)">
+                    <feather-icon icon="RefreshCcwIcon" class="mr-50" />
+                    <span>Restore</span>
+                  </b-dropdown-item>
+                </template>
+
               </b-dropdown>
             </span>
           </span>
@@ -614,6 +628,34 @@ export default {
       }
     },
 
+    async onRestore(id) {
+      try {
+        await this.$api.put(`/api/user/${id}/restore`)
+
+        this.loadItems()
+
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Success',
+            icon: 'BellIcon',
+            variant: 'success',
+            text: 'User successfully Restored',
+          },
+        })
+      } catch (error) {
+        this.$toast({
+          component: ToastificationContent,
+          props: {
+            title: 'Error',
+            icon: 'BellIcon',
+            variant: 'danger',
+            text: error?.response?.data?.message,
+          },
+        })
+      }
+    },
+
     async changeStatus(userId){
 
 try{
@@ -809,4 +851,5 @@ catch(error){
 
 <style lang="scss">
 @import '@core/scss/vue/libs/vue-good-table.scss';
+
 </style>
