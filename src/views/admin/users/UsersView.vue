@@ -79,11 +79,18 @@
             <b-avatar :src="props?.row?.avatar" class="mr-1" />
           </span>
 
+         
+
           <!-- Column: Status -->
-          <span v-if="props.column.field === 'status'">
-            <b-badge :variant="statusVariant(props.row.status)">
+          <span v-if="props.column.field === 'format_status'">
+            <b-button
+            v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+              variant="outline-warning"
+              v-on:click="changeStatus(props.row?.id)"
+              class="btn-sm"
+            >
               {{ props.row.status ? 'Active' : 'Inactive' }}
-            </b-badge>
+            </b-button>
           </span>
 
           <!-- Column: Action -->
@@ -435,8 +442,8 @@ export default {
       optionsRadio: [
         { text: 'All', value: 'all' },
         { text: 'Active', value: 'active' },
-        { text: 'Trashed', value: 'inactive' },
-
+        { text: 'Inactive', value: 'inactive' },
+        { text: 'Trashed', value: 'trashed' },
         
       ],
       selectStatusValue: true,
@@ -469,7 +476,7 @@ export default {
 
         {
           label: 'Status',
-          field: 'status',
+          field: 'format_status',
           sortable: false,
         },
         {
@@ -606,6 +613,42 @@ export default {
         })
       }
     },
+
+    async changeStatus(userId){
+
+try{
+  await this.$api.get(`api/user/status/update/${userId}`)
+  this.$toast({
+      component: ToastificationContent,
+      props: {
+        title: 'Success',
+        icon: 'CheckIcon',
+        variant: 'success',
+        text: "User Status Changed",
+      },
+    })
+
+    this.loadItems();
+
+}
+catch(error){
+
+  console.log(error);
+
+  this.$toast({
+      component: ToastificationContent,
+      props: {
+        title: 'Error',
+        icon: 'BellIcon',
+        variant: 'danger',
+        text: "User Status Change Failed",
+      },
+    })
+
+}
+
+
+},
 
     onSearch() {
       if (this.delayTimer) {
