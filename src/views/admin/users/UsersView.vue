@@ -136,7 +136,7 @@
                 </template>
 
 
-                <template >
+                <template v-if="$permissionAbility(USERS_EDIT, permissions)">
                   <b-dropdown-item v-on:click="onView(props.row.id)">
                     <feather-icon icon="ToolIcon" class="mr-50" />
                     <span>Activities</span>
