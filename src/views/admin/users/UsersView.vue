@@ -135,6 +135,14 @@
                   </b-dropdown-item>
                 </template>
 
+
+                <template >
+                  <b-dropdown-item v-on:click="onView(props.row.id)">
+                    <feather-icon icon="ToolIcon" class="mr-50" />
+                    <span>Activities</span>
+                  </b-dropdown-item>
+                </template>
+
               </b-dropdown>
             </span>
           </span>
@@ -574,6 +582,12 @@ export default {
     },
     showModal() {
       this.$bvModal.show('modal-users-form')
+    },
+    onView(id) {
+      this.$router.push({
+        name: 'admin-user-activity',
+        params: { id },
+      })
     },
     hiddenModal() {
       this.modelType = ''

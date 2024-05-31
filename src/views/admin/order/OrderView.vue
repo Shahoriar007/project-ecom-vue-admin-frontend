@@ -302,11 +302,11 @@
                 </template>
                 <template>
                   <b-dropdown-item v-if="$permissionAbility(ORDERS_SHOW, permissions)" v-on:click="onView(props.row.id)">
-                    <feather-icon icon="Edit2Icon" class="mr-50" />
+                    <feather-icon icon="EyeIcon" class="mr-50" />
                     <span>View</span>
                   </b-dropdown-item>
                   <b-dropdown-item v-if="$permissionAbility(ORDERS_SHOW, permissions)" v-on:click="showModal(props.row.id)">
-                    <feather-icon icon="Edit2Icon" class="mr-50" />
+                    <feather-icon icon="EyeIcon" class="mr-50" />
                     <span>View Here</span>
                   </b-dropdown-item>
                   <b-dropdown-item
