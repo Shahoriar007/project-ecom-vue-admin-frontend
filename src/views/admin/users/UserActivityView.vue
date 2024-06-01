@@ -359,7 +359,7 @@ export default {
     },
     async getActivities(params) {
       const userId = this.$route.params.id;
-      return await this.$api.get(`api/user/${userId}/activities/`,{
+      return await this.$api.get(`api/user/${userId}/activities`,{
         params:{
           rangeDate: params.rangeDate
         }
