@@ -361,6 +361,9 @@ export default {
       const userId = this.$route.params.id;
       return await this.$api.get(`api/user/${userId}/activities`,{
         params:{
+          show: params.show,
+          page: params.page,
+          sort: params.sort,
           rangeDate: params.rangeDate
         }
       })
@@ -371,6 +374,9 @@ export default {
 
         const [activities] = await Promise.all([
           this.getActivities({
+            show: this.serverParams.perPage,
+            page: this.serverParams.page,
+            sort: this.serverParams.sort,
             rangeDate: this.rangeDate,
           }),
         ])
@@ -378,12 +384,13 @@ export default {
         const userActivities = activities?.data?.data
         this.rows = userActivities
 
+        console.log("im here");
         console.log(this.rows);
+
 
         const userData = user?.data?.data
         this.userInfo = userData
 
-        console.log(this.userInfo)
       } catch (error) {
         console.log(error)
 
